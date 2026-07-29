@@ -98,6 +98,15 @@ describe('bean view', () => {
     expect(main.querySelector('h1').textContent).toContain('<img');
   });
 
+  it('renders nothing at all for a bean without flavour profiles', () => {
+    const bean = sampleBean({ flavours: [] });
+    bean.reviews[0].flavours = [];
+    renderBean(main, bean);
+    expect(main.querySelector('.flavour-block')).toBeNull();
+    // A skipped block must never leak as the literal text "null".
+    expect(main.textContent).not.toContain('null');
+  });
+
   it('has no serious accessibility violations', async () => {
     renderBean(main, sampleBean());
     expect(await noSeriousViolations(main)).toEqual([]);
