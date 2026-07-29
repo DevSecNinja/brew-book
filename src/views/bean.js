@@ -1,6 +1,6 @@
 /** Bean detail view: aggregated header, facts, and individual reviews. */
 
-import { el, clear, safeUrl } from '../components.js';
+import { el, clear, append, safeUrl } from '../components.js';
 import {
   starBar, formatRating, formatCost, formatWeight, formatValuePer100g,
   formatDate, formatGrind, initials,
@@ -114,7 +114,8 @@ export function renderBean(root, bean) {
     ...bean.reviews.map(reviewCard),
   );
 
-  root.append(
+  append(
+    root,
     back,
     header,
     el('section', { class: 'panel' }, factList, website),

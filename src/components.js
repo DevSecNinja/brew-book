@@ -54,6 +54,16 @@ export function clear(node) {
   while (node.firstChild) node.removeChild(node.firstChild);
 }
 
+/**
+ * Append children to a node, skipping the nullish/false ones.
+ * Native `append()` would stringify them into literal "null" text, so always
+ * use this when a child is conditionally rendered.
+ */
+export function append(parent, ...children) {
+  parent.append(frag(children.flat()));
+  return parent;
+}
+
 /** A document fragment from a list of children. */
 export function frag(children) {
   const f = document.createDocumentFragment();
