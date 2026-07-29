@@ -3,7 +3,7 @@
 import { el, clear, safeUrl } from '../components.js';
 import {
   starBar, formatRating, formatCost, formatWeight, formatValuePer100g,
-  formatDate, initials,
+  formatDate, formatGrind, initials,
 } from '../format.js';
 
 function factRow(label, value) {
@@ -33,6 +33,8 @@ function reviewCard(review) {
   const weight = formatWeight(review.weightGrams);
   if (weight) meta.push(weight);
   if (review.brewMethod) meta.push(review.brewMethod);
+  const grind = formatGrind(review);
+  if (grind) meta.push(grind);
   if (review.ratio) meta.push(`Ratio ${review.ratio}`);
   if (review.buyAgain) meta.push('Would buy again');
   const date = formatDate(review.submittedAt);

@@ -24,6 +24,11 @@ const BREW_METHODS = [
   'Espresso', 'V60 / Pour-over', 'AeroPress', 'French Press',
   'Moka Pot', 'Filter (batch / drip)', 'Cold Brew', 'Other',
 ];
+const GRIND_SOURCES = ['Ground by me', 'Pre-ground', 'Unknown'];
+const GRIND_SIZES = [
+  'Extra Fine', 'Fine', 'Medium-Fine', 'Medium',
+  'Medium-Coarse', 'Coarse', 'Extra Coarse', 'Unknown',
+];
 const FLAVOURS = [
   'Chocolate / Cocoa', 'Nutty', 'Caramel / Toffee', 'Fruity (stone / tropical)',
   'Berry', 'Citrus', 'Floral', 'Spicy', 'Sweet / Sugary', 'Earthy / Herbal',
@@ -229,6 +234,14 @@ export function sanitizeReview(raw) {
     ? roastDateRaw
     : null;
 
+  // Grind is a property of the brew, not of the bean: it stays on the review.
+  // Pre-ground coffee was never ground by the reviewer, so any grinder or
+  // setting they typed anyway is dropped as contradictory.
+  const grindSource = matchEnum(raw.grindSource, GRIND_SOURCES);
+  const preGround = grindSource === 'Pre-ground';
+  const grinder = preGround ? null : cleanText(raw.grinder, MAX_SHORT);
+  const grindSetting = preGround ? null : cleanText(raw.grindSetting, MAX_SHORT);
+
   return {
     id: Number.isInteger(raw.id) ? raw.id : null,
     url: cleanIssueUrl(raw.url),
@@ -252,6 +265,10 @@ export function sanitizeReview(raw) {
     weightGrams,
     flavours,
     brewMethod: matchEnum(raw.brewMethod, BREW_METHODS),
+    grindSource,
+    grinder,
+    grindSetting,
+    grindSize: matchEnum(raw.grindSize, GRIND_SIZES),
     ratio: cleanRatio(raw.ratio),
     website: cleanUrl(raw.website),
     notes: cleanText(raw.notes, MAX_TEXT),
@@ -261,5 +278,5 @@ export function sanitizeReview(raw) {
 
 export const ALLOWED = {
   ROAST_TYPES, ROAST_LEVELS, BLENDS, PROCESSES, SPECIES, BREW_METHODS,
-  FLAVOURS, CURRENCIES,
+  GRIND_SOURCES, GRIND_SIZES, FLAVOURS, CURRENCIES,
 };

@@ -32,6 +32,10 @@ function raw(overrides = {}) {
     weight: '250',
     flavours: ['Berry', 'Citrus'],
     brewMethod: 'V60 / Pour-over',
+    grindSource: 'Ground by me',
+    grinder: 'Kingrinder K6',
+    grindSetting: '100 clicks',
+    grindSize: 'Medium',
     ratio: '1:16',
     website: 'https://example.com/bean',
     notes: 'Nice and juicy',
@@ -155,5 +159,30 @@ describe('sanitizeReview', () => {
     expect(sanitizeReview(raw({ ratio: '16' })).ratio).toBe('1:16');
     expect(sanitizeReview(raw({ ratio: 'a lot of water' })).ratio).toBeNull();
     expect(sanitizeReview(raw({ ratio: null })).ratio).toBeNull();
+  });
+
+  it('keeps the grind details on the review', () => {
+    const r = sanitizeReview(raw());
+    expect(r.grindSource).toBe('Ground by me');
+    expect(r.grinder).toBe('Kingrinder K6');
+    expect(r.grindSetting).toBe('100 clicks');
+    expect(r.grindSize).toBe('Medium');
+  });
+
+  it('drops grinder details for pre-ground coffee', () => {
+    const r = sanitizeReview(raw({ grindSource: 'Pre-ground', grindSize: 'Medium-Fine' }));
+    expect(r.grindSource).toBe('Pre-ground');
+    expect(r.grinder).toBeNull();
+    expect(r.grindSetting).toBeNull();
+    expect(r.grindSize).toBe('Medium-Fine');
+  });
+
+  it('drops unrecognized grind enums and sanitizes the free-text grinder', () => {
+    const r = sanitizeReview(raw({
+      grindSource: 'By hand somehow', grindSize: 'Gravel', grinder: '<b>Kingrinder</b> K6',
+    }));
+    expect(r.grindSource).toBeNull();
+    expect(r.grindSize).toBeNull();
+    expect(r.grinder).toBe('Kingrinder K6');
   });
 });

@@ -56,6 +56,29 @@ export function formatDate(iso) {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+/**
+ * How the beans were ground for this brew, e.g.
+ * "Kingrinder K6 @ 100 clicks (Medium)" or "Pre-ground".
+ * Returns null when the reviewer told us nothing about the grind.
+ */
+export function formatGrind(review) {
+  if (!review) return null;
+  const size = review.grindSize && review.grindSize !== 'Unknown' ? review.grindSize : null;
+  if (review.grindSource === 'Pre-ground') {
+    return size ? `Pre-ground (${size})` : 'Pre-ground';
+  }
+  let head = null;
+  if (review.grinder) {
+    head = review.grindSetting ? `${review.grinder} @ ${review.grindSetting}` : review.grinder;
+  } else if (review.grindSetting) {
+    head = `Ground at ${review.grindSetting}`;
+  } else if (review.grindSource === 'Ground by me') {
+    head = 'Ground by me';
+  }
+  if (!head) return size ? `${size} grind` : null;
+  return size ? `${head} (${size})` : head;
+}
+
 /** Initials for an avatar fallback. */
 export function initials(text) {
   return String(text ?? '?')

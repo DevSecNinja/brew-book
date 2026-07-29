@@ -32,6 +32,22 @@ Omni (Filter &amp; Espresso)
 ### Roast date
 
 _No response_
+
+### Pre-ground or ground yourself?
+
+Ground by me
+
+### Grinder
+
+Kingrinder K6
+
+### Grind setting
+
+100 clicks
+
+### Grind size
+
+Medium
 `;
 
 describe('parse-issue', () => {
@@ -75,6 +91,14 @@ describe('parse-issue', () => {
     expect(raw.decaf).toBe(true);
     expect(raw.flavours).toEqual(['Berry', 'Floral']);
     expect(raw.author.login).toBe('octocat');
+  });
+
+  it('parseIssue reads the grind fields', () => {
+    const raw = parseIssue({ number: 7, body });
+    expect(raw.grindSource).toBe('Ground by me');
+    expect(raw.grinder).toBe('Kingrinder K6');
+    expect(raw.grindSetting).toBe('100 clicks');
+    expect(raw.grindSize).toBe('Medium');
   });
 
   it('handles empty / missing body safely', () => {

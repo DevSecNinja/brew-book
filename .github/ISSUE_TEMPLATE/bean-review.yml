@@ -301,6 +301,57 @@ body:
     validations:
       required: false
 
+  - type: dropdown
+    id: grind_source
+    attributes:
+      label: Pre-ground or ground yourself?
+      description: Whether you ground the beans for this brew, or bought them already ground.
+      options:
+        - Ground by me
+        - Pre-ground
+        - Unknown
+    validations:
+      required: false
+
+  - type: input
+    id: grinder
+    attributes:
+      label: Grinder
+      description: The grinder you used. Leave empty for pre-ground coffee.
+      placeholder: e.g. Kingrinder K6, Comandante C40, DF64
+    validations:
+      required: false
+
+  - type: input
+    id: grind_setting
+    attributes:
+      label: Grind setting
+      description: >
+        The setting you ground at, in your grinder's own units (clicks, numbers
+        or dial position). Leave empty for pre-ground coffee.
+      placeholder: e.g. 100 clicks
+    validations:
+      required: false
+
+  - type: dropdown
+    id: grind_size
+    attributes:
+      label: Grind size
+      description: >
+        Roughly how coarse the grounds were. Grinder settings aren't comparable
+        between machines — this is, so please fill it in if you can.
+      options:
+        - Extra Fine
+        - Fine
+        - Medium-Fine
+        - Medium
+        - Medium-Coarse
+        - Coarse
+        - Extra Coarse
+        - Unknown
+    validations:
+      required: false
+
   - type: input
     id: brew_ratio
     attributes:

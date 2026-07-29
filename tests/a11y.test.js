@@ -24,7 +24,9 @@ function sampleBean(overrides = {}) {
       author: { login: 'octocat', avatarUrl: 'https://avatars.githubusercontent.com/u/1', profileUrl: 'https://github.com/octocat' },
       name: 'Test Bean', roaster: 'Test Roaster', rating: 3.5,
       currency: { code: 'EUR', symbol: '€' }, cost: 12.5, weightGrams: 250,
-      flavours: ['Berry'], brewMethod: 'V60 / Pour-over', notes: 'Lovely cup', buyAgain: true,
+      flavours: ['Berry'], brewMethod: 'V60 / Pour-over', grindSource: 'Ground by me',
+      grinder: 'Kingrinder K6', grindSetting: '100 clicks', grindSize: 'Medium',
+      notes: 'Lovely cup', buyAgain: true,
     }],
     ...overrides,
   };
@@ -77,6 +79,12 @@ describe('bean view', () => {
     // Derived value shown in the facts panel, not the raw price.
     expect(main.querySelector('.facts').textContent).toContain('€5.00 / 100g');
     expect(main.querySelector('.facts').textContent).not.toContain('€12.50');
+  });
+
+  it('shows the grind on the review, never on the bean facts', () => {
+    renderBean(main, sampleBean());
+    expect(main.querySelector('.review').textContent).toContain('Kingrinder K6 @ 100 clicks (Medium)');
+    expect(main.querySelector('.facts').textContent).not.toContain('Kingrinder');
   });
 
   it('never renders untrusted notes as markup (XSS-safe)', () => {
