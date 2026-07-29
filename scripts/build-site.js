@@ -43,11 +43,24 @@ function factRow(label, value) {
   return `<div class="fact"><dt>${esc(label)}</dt><dd>${esc(text)}</dd></div>`;
 }
 
+/** Mirrors formatGrind() in src/format.js (this script has no DOM deps). */
+function grindText(r) {
+  const size = r.grindSize && r.grindSize !== 'Unknown' ? r.grindSize : null;
+  if (r.grindSource === 'Pre-ground') return size ? `Pre-ground (${size})` : 'Pre-ground';
+  let head = null;
+  if (r.grinder) head = r.grindSetting ? `${r.grinder} @ ${r.grindSetting}` : r.grinder;
+  else if (r.grindSetting) head = `Ground at ${r.grindSetting}`;
+  else if (r.grindSource === 'Ground by me') head = 'Ground by me';
+  if (!head) return size ? `${size} grind` : null;
+  return size ? `${head} (${size})` : head;
+}
+
 function reviewHtml(r) {
   const author = r.author ?? {};
   const meta = [
     money(r.cost, r.currency), r.weightGrams != null ? `${r.weightGrams} g` : null,
-    r.brewMethod, r.ratio ? `Ratio ${r.ratio}` : null, r.buyAgain ? 'Would buy again' : null,
+    r.brewMethod, grindText(r), r.ratio ? `Ratio ${r.ratio}` : null,
+    r.buyAgain ? 'Would buy again' : null,
   ].filter(Boolean).map(esc).join(' · ');
   const who = author.login
     ? `<a class="author-name" href="${esc(author.profileUrl || `https://github.com/${author.login}`)}" target="_blank" rel="noopener">@${esc(author.login)}</a>`

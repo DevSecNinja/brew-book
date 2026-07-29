@@ -42,6 +42,11 @@ export function validateIssue(issue) {
     if (raw.process && !review.process) warnings.push('**Process** wasn’t recognized and will be omitted.');
     if (raw.species && !review.species) warnings.push('**Species** wasn’t recognized and will be omitted.');
     if (raw.brewMethod && !review.brewMethod) warnings.push('**How did you brew it?** wasn’t recognized and will be omitted.');
+    if (raw.grindSource && !review.grindSource) warnings.push('**Pre-ground or ground yourself?** wasn’t recognized and will be omitted.');
+    if (raw.grindSize && !review.grindSize) warnings.push('**Grind size** wasn’t recognized and will be omitted.');
+    if (review.grindSource === 'Pre-ground' && (cleanText(raw.grinder) || cleanText(raw.grindSetting))) {
+      warnings.push('You marked the coffee as **Pre-ground**, so the **Grinder** and **Grind setting** will be omitted.');
+    }
     if (raw.ratio && !review.ratio) warnings.push('**Brew ratio** couldn’t be read as a `1:N` ratio; it will be omitted.');
     if (raw.website && !review.website) warnings.push('**Bean website** must be an `http(s)` URL; it will be omitted.');
     if (raw.cost && review.cost == null) warnings.push('**Cost** couldn’t be read as a number; it will be omitted.');
