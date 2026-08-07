@@ -57,6 +57,7 @@ const tea = {
     schemaDescription: 'Untappd for tea — a hand-kept log of tea reviews.',
     url: 'https://tea.ravensberg.org',
     repoUrl: 'https://github.com/DevSecNinja/brew-book',
+    relatedSite: { name: 'Bean Book', url: 'https://coffee.ravensberg.org' },
     mark: '🍃',
     locale: 'en_GB',
     schemaCategory: 'Tea',
