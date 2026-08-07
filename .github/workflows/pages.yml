@@ -106,7 +106,7 @@ jobs:
       pages: write
     with:
       # renovate: datasource=npm depName=wrangler
-      wrangler-version: "4.116.0"
+      wrangler-version: "4.118.0"
       github-pages: false
       # Nothing to install or build here: the site arrives prebuilt and the
       # test suite already ran in the build job above. Left at its `npm ci`
@@ -140,7 +140,7 @@ jobs:
       pages: write
     with:
       # renovate: datasource=npm depName=wrangler
-      wrangler-version: "4.116.0"
+      wrangler-version: "4.118.0"
       github-pages: false
       # Nothing to install or build here: the site arrives prebuilt and the
       # test suite already ran in the build job above. Left at its `npm ci`
