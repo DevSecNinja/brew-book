@@ -108,6 +108,10 @@ jobs:
       # renovate: datasource=npm depName=wrangler
       wrangler-version: "4.116.0"
       github-pages: false
+      # Nothing to install or build here: the site arrives prebuilt and the
+      # test suite already ran in the build job above. Left at its `npm ci`
+      # default, install-command would also force a node-version input.
+      install-command: ""
       cloudflare-production: true
       cloudflare-project-name: bean-book
       artifact-name: site-coffee
@@ -138,6 +142,10 @@ jobs:
       # renovate: datasource=npm depName=wrangler
       wrangler-version: "4.116.0"
       github-pages: false
+      # Nothing to install or build here: the site arrives prebuilt and the
+      # test suite already ran in the build job above. Left at its `npm ci`
+      # default, install-command would also force a node-version input.
+      install-command: ""
       cloudflare-production: true
       cloudflare-project-name: leaf-book
       artifact-name: site-tea
