@@ -13,10 +13,6 @@ name: Pages
 # needs a GITHUB_TOKEN to read those issues. Both sites are built and tested
 # once, uploaded as artifacts, and the reusable workflow only deploys them.
 
-# TODO: `artifact-name` is added by DevSecNinja/.github PR #303
-# ("feat(pages): deploy prebuilt artifacts via artifact-name"). Bump both
-# `uses:` pins below to that release before merging.
-
 on:
   push:
     branches:
@@ -96,7 +92,7 @@ jobs:
     if: >-
       ${{ !cancelled() &&
       (needs.build.result == 'success' || needs.build.result == 'skipped') }}
-    uses: DevSecNinja/.github/.github/workflows/pages.yml@783a7a3a03ae71efcdf5b13eaea80efe26dfa641 # v2.2.0
+    uses: DevSecNinja/.github/.github/workflows/pages.yml@323e3b5c8104a29bbef152911bd7d2260525f513 # v2.3.0
     permissions:
       contents: read
       deployments: write
@@ -121,7 +117,7 @@ jobs:
     if: >-
       ${{ !cancelled() &&
       (needs.build.result == 'success' || needs.build.result == 'skipped') }}
-    uses: DevSecNinja/.github/.github/workflows/pages.yml@783a7a3a03ae71efcdf5b13eaea80efe26dfa641 # v2.2.0
+    uses: DevSecNinja/.github/.github/workflows/pages.yml@323e3b5c8104a29bbef152911bd7d2260525f513 # v2.3.0
     permissions:
       contents: read
       deployments: write
