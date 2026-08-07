@@ -1,8 +1,26 @@
 /** Home view: searchable, filterable gallery of items. */
 
 import { el, clear } from '../components.js';
-import { starBar, formatRating, formatValuePer100g, factValue } from '../format.js';
+import { starBar, formatRating, formatValuePer100g, factValue, newReviewUrl } from '../format.js';
 import { makers } from '../data.js';
+
+/**
+ * The "nothing published yet" state, with the call to action.
+ *
+ * Shown both when the data file can't be loaded and when it loads fine but is
+ * empty — a brand-new site should invite the first review, not present a wall
+ * of filters over an empty grid.
+ */
+export function emptyState(product) {
+  return el('div', { class: 'empty' },
+    el('h1', { text: product.site.emptyTitle }),
+    el('p', { text: 'No reviews have been published yet. Check back soon!' }),
+    el('a', {
+      class: 'btn primary', href: newReviewUrl(product),
+      target: '_blank', rel: 'noopener', text: product.terms.firstReview,
+    }),
+  );
+}
 
 function badgeText(entry, facts) {
   const value = factValue(entry, facts, entry.label);
@@ -77,6 +95,18 @@ export function matches(item, f, product) {
 export function renderHome(root, data, product) {
   clear(root);
 
+  const hero = el('section', { class: 'hero' },
+    el('h1', { text: product.site.name }),
+    el('p', { class: 'tagline', text: product.site.tagline }),
+  );
+
+  // Nothing published yet: skip the search and filter controls entirely, they
+  // would only be a confusing way to look at an empty grid.
+  if (data.items.length === 0) {
+    root.append(hero, emptyState(product));
+    return;
+  }
+
   const filters = { q: '', maker: '', minRating: 0, priceBand: '', facts: {} };
 
   const grid = el('div', { class: 'grid', id: 'item-grid' });
@@ -147,11 +177,6 @@ export function renderHome(root, data, product) {
   };
 
   const controls = el('div', { class: 'controls' }, product.filters.map(control));
-
-  const hero = el('section', { class: 'hero' },
-    el('h1', { text: product.site.name }),
-    el('p', { class: 'tagline', text: product.site.tagline }),
-  );
 
   root.append(
     hero,

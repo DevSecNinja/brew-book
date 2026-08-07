@@ -3,9 +3,10 @@
 import { el, clear } from './components.js';
 import { loadData, findItem } from './data.js';
 import { parseRoute, onRouteChange, interceptLinks } from './router.js';
-import { renderHome } from './views/home.js';
+import { renderHome, emptyState } from './views/home.js';
 import { renderItem } from './views/item.js';
 import { itemTitle, itemDescription, itemPath } from './seo.js';
+import { newReviewUrl } from './text.js';
 
 const THEMES = ['auto', 'light', 'dark'];
 
@@ -30,14 +31,14 @@ function themeToggle(themeKey) {
   return btn;
 }
 
-function header(product, newReviewUrl) {
+function header(product, reviewUrl) {
   return el('header', { class: 'site-header' },
     el('a', { class: 'brand', href: '/' },
       el('span', { class: 'brand-mark', 'aria-hidden': 'true', text: product.site.mark }),
       el('span', { class: 'brand-name', text: product.site.name }),
     ),
     el('nav', { class: 'site-nav' },
-      el('a', { class: 'btn ghost', href: newReviewUrl, target: '_blank', rel: 'noopener', text: product.terms.addReview }),
+      el('a', { class: 'btn ghost', href: reviewUrl, target: '_blank', rel: 'noopener', text: product.terms.addReview }),
       themeToggle(`${product.id}-book-theme`),
     ),
   );
@@ -109,24 +110,22 @@ function footer(data, buildId, product) {
  */
 export async function initApp(root, { buildId, product } = {}) {
   clear(root);
-  const newReviewUrl = `${product.site.repoUrl}/issues/new?template=${product.issue.template}`;
+  const reviewUrl = newReviewUrl(product);
   const content = el('main', { class: 'content', id: 'content', tabindex: '-1' });
 
   let data;
   try {
     data = await loadData();
   } catch {
-    root.append(header(product, newReviewUrl), el('main', { class: 'content' },
-      el('div', { class: 'empty' },
-        el('h1', { text: product.site.emptyTitle }),
-        el('p', { text: 'No reviews have been published yet. Check back soon!' }),
-        el('a', { class: 'btn primary', href: newReviewUrl, target: '_blank', rel: 'noopener', text: product.terms.firstReview }),
-      ),
-    ), footer(null, buildId, product));
+    root.append(
+      header(product, reviewUrl),
+      el('main', { class: 'content' }, emptyState(product)),
+      footer(null, buildId, product),
+    );
     return;
   }
 
-  root.append(header(product, newReviewUrl), content, footer(data, buildId, product));
+  root.append(header(product, reviewUrl), content, footer(data, buildId, product));
 
   const render = (route) => {
     let item = null;

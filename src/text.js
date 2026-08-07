@@ -46,6 +46,11 @@ export function plural(count, singular, pluralForm = `${singular}s`) {
   return `${count} ${count === 1 ? singular : pluralForm}`;
 }
 
+/** Where a visitor goes to submit a review for this product. */
+export function newReviewUrl(product) {
+  return `${product.site.repoUrl}/issues/new?template=${product.issue.template}`;
+}
+
 /** Initials for an avatar fallback. */
 export function initials(text) {
   return String(text ?? '?')

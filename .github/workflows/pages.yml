@@ -30,7 +30,13 @@ on:
       - "**.md"
   # Rebuild when reviews are published/unpublished or edited.
   issues:
-    types: [closed, reopened, labeled, unlabeled, edited, deleted]
+    types:
+      - closed
+      - reopened
+      - labeled
+      - unlabeled
+      - edited
+      - deleted
   # Daily refresh so edits to already-published issues eventually show up.
   schedule:
     - cron: "0 5 * * *"
@@ -42,7 +48,17 @@ permissions:
 jobs:
   build:
     name: Test & build both sites
-    if: ${{ github.event_name != 'pull_request' || github.event.action != 'closed' }}
+    # Any issue event fires this workflow, but only review issues change the
+    # sites — without this, unrelated issue chatter (the Renovate dashboard,
+    # say) redeploys both of them. `unlabeled` is always allowed: that is how a
+    # review is unpublished, including by removing its form label, and by then
+    # the label is already gone from the payload.
+    if: >-
+      ${{ (github.event_name != 'pull_request' || github.event.action != 'closed') &&
+      (github.event_name != 'issues' ||
+      github.event.action == 'unlabeled' ||
+      contains(github.event.issue.labels.*.name, 'bean-review') ||
+      contains(github.event.issue.labels.*.name, 'tea-review')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -90,8 +106,8 @@ jobs:
     name: Bean Book (coffee)
     needs: build
     if: >-
-      ${{ !cancelled() &&
-      (needs.build.result == 'success' || needs.build.result == 'skipped') }}
+      ${{ !cancelled() && (needs.build.result == 'success' ||
+      (github.event_name == 'pull_request' && github.event.action == 'closed')) }}
     uses: DevSecNinja/.github/.github/workflows/pages.yml@7d7ddabef968d8505aceb8a1f8965afd872f0a0c # v2.4.0
     permissions:
       contents: read
@@ -124,8 +140,8 @@ jobs:
     name: Leaf Book (tea)
     needs: build
     if: >-
-      ${{ !cancelled() &&
-      (needs.build.result == 'success' || needs.build.result == 'skipped') }}
+      ${{ !cancelled() && (needs.build.result == 'success' ||
+      (github.event_name == 'pull_request' && github.event.action == 'closed')) }}
     uses: DevSecNinja/.github/.github/workflows/pages.yml@7d7ddabef968d8505aceb8a1f8965afd872f0a0c # v2.4.0
     permissions:
       contents: read
