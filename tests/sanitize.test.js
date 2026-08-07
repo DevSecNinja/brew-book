@@ -187,6 +187,18 @@ describe('sanitizeReview — tea schema', () => {
     expect(teaRaw({ harvestYear: '2026' }).harvestYear).toBe(2026);
   });
 
+  it('keeps a blend ingredient list as an item fact', () => {
+    const list = 'Rooibos, orange, grapefruit, safflower blossom, mint, orange blossom, flavouring';
+    expect(teaRaw({ ingredients: list }).ingredients).toBe(list);
+    // Long enough for a real packet, and still capped.
+    expect(teaRaw({ ingredients: 'x'.repeat(900) }).ingredients.length).toBe(500);
+  });
+
+  it('recognises the herbal flavour notes tisanes actually have', () => {
+    expect(teaRaw({ flavours: ['Minty', 'Herbal', 'Citrus'] }).flavours)
+      .toEqual(['Minty', 'Herbal', 'Citrus']);
+  });
+
   it('has no coffee fields at all', () => {
     const review = teaRaw();
     expect(review).not.toHaveProperty('roastLevel');

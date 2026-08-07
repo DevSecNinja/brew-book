@@ -41,8 +41,9 @@ const BREW_METHODS = [
 ];
 const FLAVOURS = [
   'Floral', 'Fruity (stone / tropical)', 'Citrus', 'Berry', 'Grassy / Vegetal',
-  'Nutty', 'Malty', 'Honey / Sweet', 'Chocolate / Cocoa', 'Spicy', 'Smoky',
-  'Earthy / Woody', 'Creamy / Buttery', 'Mineral', 'Umami', 'Astringent',
+  'Minty', 'Herbal', 'Nutty', 'Malty', 'Honey / Sweet', 'Chocolate / Cocoa',
+  'Spicy', 'Smoky', 'Earthy / Woody', 'Creamy / Buttery', 'Mineral', 'Umami',
+  'Astringent',
 ];
 
 const tea = {
@@ -136,6 +137,7 @@ const tea = {
     { id: 'origins', label: 'Origin', type: 'list', scope: 'item', splitWhen: { field: 'blend', equals: 'Blend' } },
     { id: 'oxidation', label: 'Oxidation / processing', type: 'enum', options: OXIDATIONS, scope: 'item' },
     { id: 'cultivar', label: 'Cultivar', type: 'text', scope: 'item' },
+    { id: 'ingredients', label: 'Ingredients', type: 'longtext', max: 500, scope: 'item' },
     { id: 'currency', label: 'Currency', type: 'currency' },
     { id: 'cost', label: 'Cost', type: 'number', role: 'cost', min: 0 },
     { id: 'weightGrams', label: 'Weight (grams)', type: 'number', role: 'weight', integer: true, min: 1 },
@@ -157,6 +159,7 @@ const tea = {
     { field: 'origins', label: 'Origin' },
     { field: 'oxidation', label: 'Oxidation' },
     { field: 'cultivar', label: 'Cultivar' },
+    { field: 'ingredients', label: 'Ingredients' },
     { field: 'harvest', label: 'Harvest' },
     { field: 'harvestYear', label: 'Harvest year' },
     { field: 'caffeineFree', label: 'Caffeine free' },

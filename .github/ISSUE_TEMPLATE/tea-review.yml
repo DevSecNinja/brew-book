@@ -228,6 +228,18 @@ body:
     validations:
       required: false
 
+  - type: textarea
+    id: ingredients
+    attributes:
+      label: Ingredients
+      description: >
+        For a blend or tisane, the ingredient list from the packet. Copy it as
+        printed — this is often the only thing that distinguishes one flavoured
+        blend from another.
+      placeholder: e.g. Rooibos, orange, grapefruit, safflower blossom, mint, orange blossom, flavouring
+    validations:
+      required: false
+
   # ------------------------------------------------------------------
   # Additional info (optional)
   # ------------------------------------------------------------------
@@ -283,6 +295,8 @@ body:
         - label: Citrus
         - label: Berry
         - label: Grassy / Vegetal
+        - label: Minty
+        - label: Herbal
         - label: Nutty
         - label: Malty
         - label: Honey / Sweet

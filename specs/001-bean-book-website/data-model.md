@@ -63,7 +63,12 @@ Review scope: `currency`, `cost`, `weightGrams`, `flavours`, `brewMethod`,
 ### Tea fields (`products/tea.js`)
 
 Item scope: `teaType`, `form`, `blend`, `caffeineFree`, `organic`, `harvest`,
-`harvestYear`, `origins`, `oxidation`, `cultivar`, `website`.
+`harvestYear`, `origins`, `oxidation`, `cultivar`, `ingredients`, `website`.
+
+`ingredients` carries the packet's ingredient list. For a flavoured blend or
+tisane it is often the only thing that distinguishes one product from another —
+`origins`, `harvest` and `cultivar` describe a single-origin leaf tea and are
+usually empty for a blend.
 
 Review scope: `currency`, `cost`, `weightGrams`, `flavours`, `brewMethod`,
 `waterTemp`, `steepTime`, `steeps`, `ratio`, `notes`, `buyAgain`.

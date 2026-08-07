@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-07T11:19:48.017Z",
+  "generatedAt": "2026-08-07T13:12:25.501Z",
   "buildId": "__BUILD_ID__",
   "product": "tea",
   "itemCount": 2,
@@ -32,6 +32,7 @@
         ],
         "oxidation": "Roasted",
         "cultivar": "Shui Xian",
+        "ingredients": null,
         "website": null
       },
       "flavours": [
@@ -65,6 +66,7 @@
           ],
           "oxidation": "Roasted",
           "cultivar": "Shui Xian",
+          "ingredients": null,
           "currency": {
             "code": "EUR",
             "symbol": "€"
@@ -115,6 +117,7 @@
         ],
         "oxidation": "Lightly oxidised",
         "cultivar": "AV2",
+        "ingredients": "Darjeeling black tea",
         "website": "https://www.simonlevelt.nl/nl/darjeeling-first-flush/"
       },
       "flavours": [
@@ -147,6 +150,7 @@
           ],
           "oxidation": "Lightly oxidised",
           "cultivar": "AV2",
+          "ingredients": "Darjeeling black tea",
           "currency": {
             "code": "EUR",
             "symbol": "€"
