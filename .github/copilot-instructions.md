@@ -24,7 +24,7 @@ node scripts/make-icons.js tea                   # regenerate tea PNG icons (rar
 
 `npm run build` without `GITHUB_TOKEN` reads `data/<product>.sample.json`
 (raw issue fixtures) instead of the GitHub API, so builds and tests never need
-the network. In CI the token is set on production deploys only, so **pull
+the network. CI sets the token only on non-`pull_request` events, so **pull
 request previews build from the sample fixtures**. `dist/` is generated and
 git-ignored; `data/<product>.json` **is** committed.
 
@@ -123,11 +123,13 @@ GitHub Issue (bean-review / tea-review form)
   publishing. Features are developed through the Spec Kit flow (`specs/`,
   `.github/prompts/speckit.*`).
 - **Deployment:** Cloudflare Pages, one project per site (`bean-book`,
-  `leaf-book`), via the shared `DevSecNinja/.github` `pages.yml` reusable
-  workflow called once per product. Custom domains are attached in the
-  Cloudflare dashboard (no `CNAME` file). `BUILD_GITHUB_TOKEN` is passed so
-  production builds can read published issues; previews deliberately get no
-  token.
+  `leaf-book`). `.github/workflows/pages.yml` tests and builds both sites in its
+  own job (where `GITHUB_TOKEN` is available to read published issues), uploads
+  `dist/coffee` and `dist/tea` as artifacts, and calls the shared
+  `DevSecNinja/.github` `pages.yml` twice in `artifact-name` mode to deploy
+  them. The shared workflow never runs this repo's build, so no credential is
+  handed to it. Custom domains are attached in the Cloudflare dashboard (no
+  `CNAME` file).
 - **Commits** follow Conventional Commits; tool versions are pinned in
   `.mise.toml` and GitHub Actions are SHA-pinned, both Renovate-managed.
 - Tests live in `tests/*.test.js`, use `// @vitest-environment jsdom` per-file

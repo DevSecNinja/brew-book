@@ -85,9 +85,11 @@ form and an icon set — not touching the shared core.**
   HTML/data, cache-first for assets, `BUILD_ID` cache-busting; commit hash shown
   in the footer).
 - Data pipeline & tests in Node; **vitest** for unit + a11y tests.
-- Deployed to **Cloudflare Pages** (one project per site) via the shared
+- Deployed to **Cloudflare Pages** (one project per site). Both sites are tested
+  and built once in this repo's own job — which is where the `GITHUB_TOKEN` for
+  reading published issues lives — then handed to the shared
   [`DevSecNinja/.github`](https://github.com/DevSecNinja/.github) `pages.yml`
-  reusable workflow, called once per product.
+  reusable workflow as artifacts, which only deploys them.
 
 ## Local development
 
@@ -136,6 +138,12 @@ Both sites deploy to Cloudflare Pages. Repository secrets
 created automatically on first deploy. Custom domains
 (`coffee.ravensberg.org`, `tea.ravensberg.org`) are attached in the Cloudflare
 dashboard, so there is no `CNAME` file in the repo.
+
+`.github/workflows/pages.yml` builds both sites in one job and uploads
+`dist/coffee` and `dist/tea` as artifacts; two calls to the shared `pages.yml`
+deploy them. **Pull requests build without a `GITHUB_TOKEN`**, so previews
+render the committed sample fixtures rather than live issues — unreviewed code
+never runs against the GitHub API.
 
 ## Project layout
 

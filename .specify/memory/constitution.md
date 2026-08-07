@@ -66,11 +66,11 @@ owner action; the pipeline enforces this gate.
 - Tooling is pinned and managed with **mise**; dependencies are Renovate-managed.
 - Automated tests (vitest) cover the issue parser, sanitizer, and aggregator, plus
   an accessibility smoke check. Tests MUST pass before deploy.
-- CI/CD reuses the shared `DevSecNinja/.github` `pages.yml` workflow, called once
-  per product, which tests, generates the data artifact from published issues,
-  and deploys each site to its own Cloudflare Pages project. Pull request
-  previews build without a GitHub token and therefore render the committed
-  sample fixtures.
+- CI/CD tests and builds every product in this repository's own job, then hands
+  each site to the shared `DevSecNinja/.github` `pages.yml` workflow as an
+  artifact to deploy to its own Cloudflare Pages project. No credential is
+  passed into the shared workflow. Pull request builds run without a GitHub
+  token and therefore render the committed sample fixtures.
 
 ## Governance
 

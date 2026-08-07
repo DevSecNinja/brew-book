@@ -7,14 +7,15 @@ name: Pages
 #
 # Reviews are re-fetched from published GitHub Issues on every run, so
 # publishing, unpublishing or editing an issue is the whole state machine —
-# there is no "already processed" marker. `BUILD_GITHUB_TOKEN` is only exposed
-# to production builds; pull request previews build from the committed sample
-# fixtures instead.
+# there is no "already processed" marker.
+#
+# The build happens here rather than inside the shared workflow, because it
+# needs a GITHUB_TOKEN to read those issues. Both sites are built and tested
+# once, uploaded as artifacts, and the reusable workflow only deploys them.
 
-# TODO: `BUILD_GITHUB_TOKEN` is added by DevSecNinja/.github PR
-# "feat(pages): add opt-in BUILD_GITHUB_TOKEN for production builds". Bump both
-# `uses:` pins below to that release before merging, or the runs will fail with
-# an invalid-secret error.
+# TODO: `artifact-name` is added by DevSecNinja/.github PR #303
+# ("feat(pages): deploy prebuilt artifacts via artifact-name"). Bump both
+# `uses:` pins below to that release before merging.
 
 on:
   push:
@@ -43,8 +44,58 @@ permissions:
   contents: read
 
 jobs:
+  build:
+    name: Test & build both sites
+    if: ${{ github.event_name != 'pull_request' || github.event.action != 'closed' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          # renovate: datasource=node-version depName=node
+          node-version: "24"
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm test
+
+      # Pull requests build without a token, from the committed sample
+      # fixtures, so preview deploys never run unreviewed code against the
+      # GitHub API. Only the production branch reads live published issues.
+      - name: Build both sites
+        env:
+          GITHUB_TOKEN: ${{ github.event_name != 'pull_request' && github.token || '' }}
+          APP_COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          BUILD_ID="${APP_COMMIT_SHA::12}-$(date -u +%Y%m%d%H%M%S)" \
+            npm run build
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: site-coffee
+          path: dist/coffee
+          retention-days: 1
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: site-tea
+          path: dist/tea
+          retention-days: 1
+
   bean-book:
     name: Bean Book (coffee)
+    needs: build
+    if: >-
+      ${{ !cancelled() &&
+      (needs.build.result == 'success' || needs.build.result == 'skipped') }}
     uses: DevSecNinja/.github/.github/workflows/pages.yml@783a7a3a03ae71efcdf5b13eaea80efe26dfa641 # v2.2.0
     permissions:
       contents: read
@@ -53,25 +104,23 @@ jobs:
       issues: write
       pull-requests: write
     with:
-      # renovate: datasource=node-version depName=node
-      node-version: "24"
-      node-cache: npm
       # renovate: datasource=npm depName=wrangler
       wrangler-version: "4.116.0"
       github-pages: false
       cloudflare-production: true
       cloudflare-project-name: bean-book
+      artifact-name: site-coffee
       artifact-path: dist/coffee
-      build-command: npm run build:coffee
-      test-command: npm test
     secrets:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      # Scoped by this job's `permissions:` above — read-only, issues included.
-      BUILD_GITHUB_TOKEN: ${{ github.token }}
 
   leaf-book:
     name: Leaf Book (tea)
+    needs: build
+    if: >-
+      ${{ !cancelled() &&
+      (needs.build.result == 'success' || needs.build.result == 'skipped') }}
     uses: DevSecNinja/.github/.github/workflows/pages.yml@783a7a3a03ae71efcdf5b13eaea80efe26dfa641 # v2.2.0
     permissions:
       contents: read
@@ -80,20 +129,14 @@ jobs:
       issues: write
       pull-requests: write
     with:
-      # renovate: datasource=node-version depName=node
-      node-version: "24"
-      node-cache: npm
       # renovate: datasource=npm depName=wrangler
       wrangler-version: "4.116.0"
       github-pages: false
       cloudflare-production: true
       cloudflare-project-name: leaf-book
+      artifact-name: site-tea
       artifact-path: dist/tea
-      build-command: npm run build:tea
-      # The suite is shared and already runs in the bean-book job above.
-      test-command: ""
       preview-comment-marker: "<!-- cf-preview-comment-leaf-book -->"
     secrets:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      BUILD_GITHUB_TOKEN: ${{ github.token }}
