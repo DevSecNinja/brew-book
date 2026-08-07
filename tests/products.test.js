@@ -31,8 +31,9 @@ describe('product registry', () => {
   it('cross-links each site to the other site', () => {
     for (const product of products) {
       const relatedProduct = products.find((candidate) => candidate.site.url === product.site.relatedSite.url);
-      expect(relatedProduct?.site.name).toBe(product.site.relatedSite.name);
-      expect(relatedProduct?.id).not.toBe(product.id);
+      expect(relatedProduct).toBeDefined();
+      expect(relatedProduct.site.name).toBe(product.site.relatedSite.name);
+      expect(relatedProduct.id).not.toBe(product.id);
     }
   });
 });
