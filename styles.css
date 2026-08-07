@@ -1,63 +1,18 @@
 /* ============================================================================
-   Bean Book — modern, warm coffee styling. Light & dark via prefers-color-scheme
-   with a manual [data-theme] override. Zero dependencies.
+   Bean Book / Leaf Book — shared structural styling. Zero dependencies.
+
+   The colour palette is NOT here: `theme.css` is generated per product by
+   scripts/build-site.js from the `theme` block of its config in products/, so
+   both sites share this file byte-for-byte.
    ========================================================================== */
 
 :root {
   color-scheme: light dark;
 
-  /* Warm coffee palette */
-  --bg: #f7f3ee;
-  --bg-elev: #ffffff;
-  --surface: #ffffff;
-  --text: #2b2018;
-  --text-muted: #7a6a5c;
-  --border: #e7ddd2;
-  --accent: #b5651d;         /* roasted amber */
-  --accent-strong: #8a4a12;
-  --accent-contrast: #ffffff;
-  --link: #8a4a12;           /* readable link on light bg */
-  --star: #e0a326;
-  --star-empty: #d9ccbe;
-  --shadow: 0 1px 2px rgba(43, 32, 24, 0.06), 0 8px 24px rgba(43, 32, 24, 0.08);
   --radius: 14px;
   --radius-sm: 9px;
   --maxw: 1080px;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
-
-:root[data-theme="dark"] {
-  --bg: #1a1410;
-  --bg-elev: #241b15;
-  --surface: #241b15;
-  --text: #f3ebe2;
-  --text-muted: #b3a293;
-  --border: #38291f;
-  --accent: #e0994f;
-  --accent-strong: #f0b878;
-  --accent-contrast: #241b15;
-  --link: #e0994f;           /* brighter link on dark bg */
-  --star: #f0b64a;
-  --star-empty: #46372c;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root[data-theme="auto"] {
-    --bg: #1a1410;
-    --bg-elev: #241b15;
-    --surface: #241b15;
-    --text: #f3ebe2;
-    --text-muted: #b3a293;
-    --border: #38291f;
-    --accent: #e0994f;
-    --accent-strong: #f0b878;
-    --accent-contrast: #241b15;
-    --link: #e0994f;
-    --star: #f0b64a;
-    --star-empty: #46372c;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
-  }
 }
 
 * { box-sizing: border-box; }

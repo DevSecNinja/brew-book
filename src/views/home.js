@@ -1,102 +1,111 @@
-/** Home view: searchable, filterable gallery of beans. */
+/** Home view: searchable, filterable gallery of items. */
 
 import { el, clear } from '../components.js';
-import { starBar, formatRating, formatValuePer100g } from '../format.js';
-import { roasters } from '../data.js';
+import { starBar, formatRating, formatValuePer100g, factValue } from '../format.js';
+import { makers } from '../data.js';
 
-function beanCard(bean) {
-  const facts = bean.facts ?? {};
-  const badges = [
-    facts.roastType && facts.roastType !== 'Unknown' ? facts.roastType : null,
-    facts.roastLevel && facts.roastLevel !== 'Unknown' ? facts.roastLevel : null,
-    facts.blend && facts.blend !== 'Unknown' ? facts.blend : null,
-    facts.decaf ? 'Decaf' : null,
-    facts.organic ? 'Organic' : null,
-  ].filter(Boolean);
+function badgeText(entry, facts) {
+  const value = factValue(entry, facts, entry.label);
+  if (value == null) return null;
+  return Array.isArray(value) ? value.join(', ') : value;
+}
 
-  return el('a', { class: 'card', href: `/bean/${encodeURIComponent(bean.slug)}/` },
+function itemCard(item, product) {
+  const facts = item.facts ?? {};
+  const badges = product.badges.map((b) => badgeText(b, facts)).filter(Boolean);
+  const origins = facts.origins;
+
+  return el('a', { class: 'card', href: `/${product.terms.routeBase}/${encodeURIComponent(item.slug)}/` },
     el('div', { class: 'card-top' },
-      el('span', { class: 'rating-badge', text: formatRating(bean.averageRating) }),
-      starBar(bean.averageRating, bean.reviewCount),
+      el('span', { class: 'rating-badge', text: formatRating(item.averageRating) }),
+      starBar(item.averageRating, item.reviewCount),
     ),
-    el('h2', { class: 'card-title', text: bean.name }),
-    el('p', { class: 'card-roaster', text: bean.roaster }),
-    facts.origins && facts.origins.length
-      ? el('p', { class: 'card-origin', text: facts.origins.join(', ') })
+    el('h2', { class: 'card-title', text: item.name }),
+    el('p', { class: 'card-roaster', text: item.maker }),
+    Array.isArray(origins) && origins.length
+      ? el('p', { class: 'card-origin', text: origins.join(', ') })
       : null,
     badges.length
       ? el('div', { class: 'badges' }, badges.map((b) => el('span', { class: 'badge', text: b })))
       : null,
     el('div', { class: 'card-foot' },
-      el('span', { class: 'muted', text: `${bean.reviewCount} review${bean.reviewCount === 1 ? '' : 's'}` }),
-      bean.valuePer100g
-        ? el('span', { class: 'muted value-hint', text: `from ${formatValuePer100g(bean.valuePer100g)}` })
+      el('span', { class: 'muted', text: `${item.reviewCount} review${item.reviewCount === 1 ? '' : 's'}` }),
+      item.valuePer100g
+        ? el('span', { class: 'muted value-hint', text: `from ${formatValuePer100g(item.valuePer100g)}` })
         : null,
     ),
   );
 }
 
-export const PRICE_BANDS = [
-  { id: 'lt5', label: 'Under €5', min: 0, max: 5 },
-  { id: '5-7.5', label: '€5 – €7.50', min: 5, max: 7.5 },
-  { id: '7.5-10', label: '€7.50 – €10', min: 7.5, max: 10 },
-  { id: 'gt10', label: 'Over €10', min: 10, max: Infinity },
-];
+/** The price bands configured for a product, or [] when it has no price filter. */
+export function priceBands(product) {
+  return product.filters.find((f) => f.kind === 'price')?.bands ?? [];
+}
 
-export function matches(bean, f) {
-  if (f.q) {
-    const hay = [
-      bean.name, bean.roaster,
-      ...(bean.facts?.origins ?? []),
-      ...(bean.flavours ?? []),
-    ].join(' ').toLowerCase();
-    if (!hay.includes(f.q)) return false;
+/** Free-text haystack: name, maker and every string-ish fact plus flavours. */
+function haystack(item) {
+  const factValues = Object.values(item.facts ?? {})
+    .flatMap((v) => (Array.isArray(v) ? v : [v]))
+    .filter((v) => typeof v === 'string');
+  return [item.name, item.maker, ...factValues, ...(item.flavours ?? [])]
+    .join(' ')
+    .toLowerCase();
+}
+
+/**
+ * Does an item pass the current filter state?
+ * @param {object} item
+ * @param {object} f filter state: { q, maker, minRating, priceBand, facts: {} }
+ * @param {object} product
+ */
+export function matches(item, f, product) {
+  if (f.q && !haystack(item).includes(f.q)) return false;
+  if (f.maker && item.maker !== f.maker) return false;
+  for (const [field, value] of Object.entries(f.facts ?? {})) {
+    if (value === true && !item.facts?.[field]) return false;
+    if (typeof value === 'string' && value && item.facts?.[field] !== value) return false;
   }
-  if (f.roaster && bean.roaster !== f.roaster) return false;
-  if (f.roastType && bean.facts?.roastType !== f.roastType) return false;
-  if (f.blend && bean.facts?.blend !== f.blend) return false;
-  if (f.decaf && !bean.facts?.decaf) return false;
-  if (f.organic && !bean.facts?.organic) return false;
-  if (f.minRating && bean.averageRating < f.minRating) return false;
+  if (f.minRating && item.averageRating < f.minRating) return false;
   if (f.priceBand) {
-    const band = PRICE_BANDS.find((b) => b.id === f.priceBand);
-    const value = bean.valuePer100g?.value;
+    const band = priceBands(product).find((b) => b.id === f.priceBand);
+    const value = item.valuePer100g?.value;
     if (band == null || value == null || value < band.min || value >= band.max) return false;
   }
   return true;
 }
 
-export function renderHome(root, data) {
+export function renderHome(root, data, product) {
   clear(root);
 
-  const filters = { q: '', roaster: '', roastType: '', blend: '', decaf: false, organic: false, minRating: 0, priceBand: '' };
+  const filters = { q: '', maker: '', minRating: 0, priceBand: '', facts: {} };
 
-  const grid = el('div', { class: 'grid', id: 'bean-grid' });
+  const grid = el('div', { class: 'grid', id: 'item-grid' });
   const count = el('p', { class: 'result-count muted', 'aria-live': 'polite' });
 
   const draw = () => {
-    const visible = data.beans.filter((b) => matches(b, filters));
+    const visible = data.items.filter((i) => matches(i, filters, product));
     clear(grid);
     if (visible.length === 0) {
       grid.append(el('div', { class: 'empty' },
-        el('p', { text: 'No beans match your filters yet.' }),
+        el('p', { text: `No ${product.terms.items} match your filters yet.` }),
       ));
     } else {
-      grid.append(...visible.map(beanCard));
+      grid.append(...visible.map((i) => itemCard(i, product)));
     }
-    count.textContent = `${visible.length} of ${data.beans.length} bean${data.beans.length === 1 ? '' : 's'}`;
+    count.textContent = `${visible.length} of ${data.items.length} `
+      + `${data.items.length === 1 ? product.terms.item : product.terms.items}`;
   };
 
   const search = el('input', {
-    type: 'search', id: 'search', class: 'search', placeholder: 'Search beans, roasters, origins, flavours…',
-    'aria-label': 'Search beans',
+    type: 'search', id: 'search', class: 'search', placeholder: product.terms.searchPlaceholder,
+    'aria-label': `Search ${product.terms.items}`,
     onInput: (e) => { filters.q = e.target.value.trim().toLowerCase(); draw(); },
   });
 
   const select = (label, id, options, onChange) => el('label', { class: 'field' },
     el('span', { class: 'field-label', text: label }),
     el('select', { id, onChange: (e) => { onChange(e.target.value); draw(); } },
-      el('option', { value: '', text: `All` }),
+      el('option', { value: '', text: 'All' }),
       options.map((o) => el('option', { value: o, text: o })),
     ),
   );
@@ -106,33 +115,42 @@ export function renderHome(root, data) {
     el('span', { text: label }),
   );
 
-  const controls = el('div', { class: 'controls' },
-    select('Roaster', 'f-roaster', roasters(data), (v) => { filters.roaster = v; }),
-    select('Roast type', 'f-roast', ['Filter', 'Espresso', 'Omni (Filter & Espresso)'], (v) => { filters.roastType = v; }),
-    select('Origin type', 'f-blend', ['Single Origin', 'Blend'], (v) => { filters.blend = v; }),
-    el('label', { class: 'field' },
-      el('span', { class: 'field-label', text: 'Min rating' }),
-      el('select', { id: 'f-rating', onChange: (e) => { filters.minRating = Number(e.target.value); draw(); } },
-        el('option', { value: '0', text: 'Any' }),
-        [4, 3, 2].map((r) => el('option', { value: String(r), text: `${r}+ ★` })),
-      ),
-    ),
-    el('label', { class: 'field' },
-      el('span', { class: 'field-label', text: 'Price / 100g' }),
-      el('select', { id: 'f-price', onChange: (e) => { filters.priceBand = e.target.value; draw(); } },
-        el('option', { value: '', text: 'Any' }),
-        PRICE_BANDS.map((b) => el('option', { value: b.id, text: b.label })),
-      ),
-    ),
-    el('div', { class: 'checks' },
-      checkbox('Decaf', (v) => { filters.decaf = v; }),
-      checkbox('Organic', (v) => { filters.organic = v; }),
-    ),
-  );
+  const control = (filter) => {
+    switch (filter.kind) {
+      case 'maker':
+        return select(filter.label, filter.id, makers(data), (v) => { filters.maker = v; });
+      case 'enum':
+        return select(filter.label, filter.id, filter.options, (v) => { filters.facts[filter.field] = v; });
+      case 'rating':
+        return el('label', { class: 'field' },
+          el('span', { class: 'field-label', text: filter.label }),
+          el('select', { id: filter.id, onChange: (e) => { filters.minRating = Number(e.target.value); draw(); } },
+            el('option', { value: '0', text: 'Any' }),
+            [4, 3, 2].map((r) => el('option', { value: String(r), text: `${r}+ ★` })),
+          ),
+        );
+      case 'price':
+        return el('label', { class: 'field' },
+          el('span', { class: 'field-label', text: filter.label }),
+          el('select', { id: filter.id, onChange: (e) => { filters.priceBand = e.target.value; draw(); } },
+            el('option', { value: '', text: 'Any' }),
+            filter.bands.map((b) => el('option', { value: b.id, text: b.label })),
+          ),
+        );
+      case 'flags':
+        return el('div', { class: 'checks' },
+          filter.items.map((item) => checkbox(item.label, (v) => { filters.facts[item.field] = v; })),
+        );
+      default:
+        return null;
+    }
+  };
+
+  const controls = el('div', { class: 'controls' }, product.filters.map(control));
 
   const hero = el('section', { class: 'hero' },
-    el('h1', { text: 'Bean Book' }),
-    el('p', { class: 'tagline', text: 'A hand-kept log of coffee beans worth remembering — ratings, roasters and tasting notes.' }),
+    el('h1', { text: product.site.name }),
+    el('p', { class: 'tagline', text: product.site.tagline }),
   );
 
   root.append(

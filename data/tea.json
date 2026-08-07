@@ -1,0 +1,173 @@
+{
+  "generatedAt": "2026-08-07T06:20:22.547Z",
+  "buildId": "__BUILD_ID__",
+  "product": "tea",
+  "itemCount": 2,
+  "reviewCount": 2,
+  "items": [
+    {
+      "slug": "bitterleaf-teas-shui-xian",
+      "key": "bitterleaf teas␟shui xian",
+      "name": "Shui Xian",
+      "maker": "Bitterleaf Teas",
+      "averageRating": 4.75,
+      "reviewCount": 1,
+      "valuePer100g": {
+        "value": 36,
+        "currency": {
+          "code": "EUR",
+          "symbol": "€"
+        }
+      },
+      "facts": {
+        "teaType": "Oolong",
+        "form": "Loose leaf",
+        "blend": "Single Origin",
+        "caffeineFree": false,
+        "organic": false,
+        "harvest": "Second flush (summer)",
+        "harvestYear": 2025,
+        "origins": [
+          "China, Wuyi Mountains"
+        ],
+        "oxidation": "Roasted",
+        "cultivar": "Shui Xian",
+        "website": null
+      },
+      "flavours": [
+        "Honey / Sweet",
+        "Chocolate / Cocoa",
+        "Earthy / Woody",
+        "Mineral"
+      ],
+      "reviews": [
+        {
+          "id": 102,
+          "url": "https://github.com/DevSecNinja/bean-book/issues/102",
+          "submittedAt": "2026-07-19T18:02:00Z",
+          "author": {
+            "login": "DevSecNinja",
+            "avatarUrl": "https://avatars.githubusercontent.com/u/14926452?v=4",
+            "profileUrl": "https://github.com/DevSecNinja"
+          },
+          "name": "Shui Xian",
+          "maker": "Bitterleaf Teas",
+          "teaType": "Oolong",
+          "form": "Loose leaf",
+          "blend": "Single Origin",
+          "rating": 4.75,
+          "caffeineFree": false,
+          "organic": false,
+          "harvest": "Second flush (summer)",
+          "harvestYear": 2025,
+          "origins": [
+            "China, Wuyi Mountains"
+          ],
+          "oxidation": "Roasted",
+          "cultivar": "Shui Xian",
+          "currency": {
+            "code": "EUR",
+            "symbol": "€"
+          },
+          "cost": 18,
+          "weightGrams": 50,
+          "flavours": [
+            "Honey / Sweet",
+            "Chocolate / Cocoa",
+            "Earthy / Woody",
+            "Mineral"
+          ],
+          "brewMethod": "Gongfu (gaiwan / small pot)",
+          "waterTemp": 98,
+          "steepTime": "15 s",
+          "steeps": 8,
+          "ratio": "1:15",
+          "website": null,
+          "notes": "Deep roast on the first two steeps, then it opens into cocoa and wet stone. Eight infusions and still going.",
+          "buyAgain": true
+        }
+      ]
+    },
+    {
+      "slug": "simon-levelt-darjeeling-first-flush",
+      "key": "simon levelt␟darjeeling first flush",
+      "name": "Darjeeling First Flush",
+      "maker": "Simon Lévelt",
+      "averageRating": 4.25,
+      "reviewCount": 1,
+      "valuePer100g": {
+        "value": 12.95,
+        "currency": {
+          "code": "EUR",
+          "symbol": "€"
+        }
+      },
+      "facts": {
+        "teaType": "Black",
+        "form": "Loose leaf",
+        "blend": "Single Origin",
+        "caffeineFree": false,
+        "organic": true,
+        "harvest": "First flush (spring)",
+        "harvestYear": 2026,
+        "origins": [
+          "India, Darjeeling — Margaret's Hope"
+        ],
+        "oxidation": "Lightly oxidised",
+        "cultivar": "AV2",
+        "website": "https://www.simonlevelt.nl/nl/darjeeling-first-flush/"
+      },
+      "flavours": [
+        "Floral",
+        "Grassy / Vegetal",
+        "Astringent"
+      ],
+      "reviews": [
+        {
+          "id": 101,
+          "url": "https://github.com/DevSecNinja/bean-book/issues/101",
+          "submittedAt": "2026-07-12T09:14:00Z",
+          "author": {
+            "login": "DevSecNinja",
+            "avatarUrl": "https://avatars.githubusercontent.com/u/14926452?v=4",
+            "profileUrl": "https://github.com/DevSecNinja"
+          },
+          "name": "Darjeeling First Flush",
+          "maker": "Simon Lévelt",
+          "teaType": "Black",
+          "form": "Loose leaf",
+          "blend": "Single Origin",
+          "rating": 4.25,
+          "caffeineFree": false,
+          "organic": true,
+          "harvest": "First flush (spring)",
+          "harvestYear": 2026,
+          "origins": [
+            "India, Darjeeling — Margaret's Hope"
+          ],
+          "oxidation": "Lightly oxidised",
+          "cultivar": "AV2",
+          "currency": {
+            "code": "EUR",
+            "symbol": "€"
+          },
+          "cost": 12.95,
+          "weightGrams": 100,
+          "flavours": [
+            "Floral",
+            "Grassy / Vegetal",
+            "Astringent"
+          ],
+          "brewMethod": "Western (mug / teapot)",
+          "waterTemp": 85,
+          "steepTime": "2 min 30 s",
+          "steeps": 2,
+          "ratio": "1:60",
+          "website": "https://www.simonlevelt.nl/nl/darjeeling-first-flush/",
+          "notes": "Delicate and brisk with a real muscatel lift. Gets astringent fast if you push past three minutes.",
+          "buyAgain": true
+        }
+      ]
+    }
+  ]
+}

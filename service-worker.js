@@ -1,6 +1,6 @@
 /* eslint-env serviceworker */
 /**
- * Bean Book service worker.
+ * Shared service worker for Bean Book and Leaf Book.
  *
  * Cache strategy:
  *   - Pre-caches the app shell on install.
@@ -8,11 +8,13 @@
  *     fast and the stamped BUILD_ID stays current).
  *   - Cache-first for everything else (styles, icons, manifest).
  *
- * BUILD_ID is replaced by the deploy workflow on every commit, which busts the
- * cache and triggers an auto-update in the page.
+ * BUILD_ID and PRODUCT_ID are stamped in by scripts/build-site.js. A new
+ * BUILD_ID busts the cache and triggers an auto-update in the page; PRODUCT_ID
+ * keeps the two sites' caches apart.
  */
 const BUILD_ID = '__BUILD_ID__';
-const CACHE_NAME = `bean-book-${BUILD_ID}`;
+const PRODUCT_ID = '__PRODUCT_ID__';
+const CACHE_NAME = `${PRODUCT_ID}-book-${BUILD_ID}`;
 
 const APP_SHELL = [
   './',
@@ -25,9 +27,12 @@ const APP_SHELL = [
   './src/data.js',
   './src/components.js',
   './src/format.js',
+  './src/text.js',
+  './src/seo.js',
+  './src/product.config.js',
   './src/views/home.js',
-  './src/views/bean.js',
-  './data/beans.json',
+  './src/views/item.js',
+  './data/items.json',
   './icons/icon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -72,7 +77,7 @@ self.addEventListener('fetch', (event) => {
   const isHtml =
     req.mode === 'navigate' ||
     (req.headers.get('accept') ?? '').includes('text/html');
-  const isData = url.pathname.endsWith('/beans.json');
+  const isData = url.pathname.endsWith('/items.json');
   const isScript = url.pathname.endsWith('.js') && url.pathname.includes('/src/');
 
   if (isHtml || isData || isScript) {

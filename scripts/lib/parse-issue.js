@@ -6,8 +6,9 @@
  * Checkbox fields render as `- [x]` / `- [ ]` lists.
  *
  * This module is intentionally dumb: it only slices the body into
- * label -> raw-string / checked-items. All validation and sanitization
- * happens later in sanitize.js. Treat every value here as untrusted.
+ * label -> raw-string / checked-items, driven by the field labels declared in
+ * the product config. All validation and sanitization happens later in
+ * sanitize.js. Treat every value here as untrusted.
  */
 
 const NO_RESPONSE = '_No response_';
@@ -90,16 +91,18 @@ export function readCheckedList(sections, label) {
 }
 
 /**
- * Parse an issue (body + metadata) into a raw, unsanitized review object.
- * Field labels mirror .github/ISSUE_TEMPLATE/bean-review.yml exactly.
+ * Parse an issue (body + metadata) into a raw, unsanitized review object keyed
+ * by field id. Field labels come from the product config and must mirror the
+ * matching issue form verbatim.
  *
  * @param {object} issue - { number, html_url, created_at, user, body }
+ * @param {object} product - product config (see products/)
  * @returns {object} raw review (all values untrusted)
  */
-export function parseIssue(issue) {
+export function parseIssue(issue, product) {
   const sections = splitSections(issue?.body ?? '');
 
-  return {
+  const raw = {
     id: issue?.number ?? null,
     url: issue?.html_url ?? null,
     submittedAt: issue?.created_at ?? null,
@@ -108,32 +111,24 @@ export function parseIssue(issue) {
       avatarUrl: issue?.user?.avatar_url ?? null,
       profileUrl: issue?.user?.html_url ?? issue?.user?.profile_url ?? null,
     },
-    name: readText(sections, 'Bean name'),
-    roasterChoice: readText(sections, 'Roaster'),
-    roasterOther: readText(sections, 'Roaster (if not listed)'),
-    roastType: readText(sections, 'Roast type'),
-    roastLevel: readText(sections, 'Roast level'),
-    blend: readText(sections, 'Single origin or blend?'),
-    rating: readText(sections, 'Rating'),
-    decaf: readChecked(sections, 'Decaffeinated'),
-    organic: readChecked(sections, 'Organic'),
-    roastDate: readText(sections, 'Roast date'),
-    origin: readText(sections, 'Origin'),
-    process: readText(sections, 'Process'),
-    species: readText(sections, 'Species'),
-    variety: readText(sections, 'Variety / cultivar'),
-    currency: readText(sections, 'Currency'),
-    cost: readText(sections, 'Cost'),
-    weight: readText(sections, 'Weight (grams)'),
-    flavours: readCheckedList(sections, 'Flavour profiles'),
-    brewMethod: readText(sections, 'How did you brew it?'),
-    grindSource: readText(sections, 'Pre-ground or ground yourself?'),
-    grinder: readText(sections, 'Grinder'),
-    grindSetting: readText(sections, 'Grind setting'),
-    grindSize: readText(sections, 'Grind size'),
-    ratio: readText(sections, 'Brew ratio'),
-    website: readText(sections, 'Bean website'),
-    notes: readText(sections, 'Review notes'),
-    buyAgain: readChecked(sections, 'Would you buy it again?'),
   };
+
+  for (const field of product.fields) {
+    switch (field.type) {
+      case 'flag':
+        raw[field.id] = readChecked(sections, field.label);
+        break;
+      case 'checklist':
+        raw[field.id] = readCheckedList(sections, field.label);
+        break;
+      case 'choiceOther':
+        raw[field.id] = readText(sections, field.label);
+        raw[`${field.id}Other`] = readText(sections, field.otherLabel);
+        break;
+      default:
+        raw[field.id] = readText(sections, field.label);
+    }
+  }
+
+  return raw;
 }

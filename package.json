@@ -1,12 +1,16 @@
 {
   "name": "bean-book",
   "version": "0.1.0",
-  "description": "Untappd for coffee beans — a static, offline PWA that showcases coffee bean reviews sourced from GitHub Issues.",
+  "description": "Untappd for coffee beans and tea — static, offline PWAs (Bean Book & Leaf Book) built from GitHub Issues.",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/build-data.js && node scripts/build-site.js",
-    "start": "node scripts/serve.js",
+    "build": "npm run build:coffee && npm run build:tea",
+    "build:coffee": "node scripts/build-data.js coffee && node scripts/build-site.js coffee",
+    "build:tea": "node scripts/build-data.js tea && node scripts/build-site.js tea",
+    "start": "npm run start:coffee",
+    "start:coffee": "npm run build:coffee && node scripts/serve.js coffee",
+    "start:tea": "npm run build:tea && node scripts/serve.js tea",
     "test": "vitest run",
     "test:watch": "vitest"
   },

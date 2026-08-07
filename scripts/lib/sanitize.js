@@ -6,34 +6,19 @@
  * entities, strip control characters and any HTML tags, and cap lengths.
  * A review that fails a required check is REJECTED (returns null).
  *
+ * The sanitizer is generic: what each field means (its type, whitelist, limits)
+ * comes from the product config, so coffee and tea share this trust boundary.
+ * Nothing may bypass it — a new field must be declared in a product config.
+ *
  * The frontend additionally renders all text via textContent, but this module
  * is the primary trust boundary — nothing unsafe should leave here.
  */
 
 const MAX_TEXT = 2000;
 const MAX_SHORT = 200;
-const MAX_ORIGINS = 20;
-const MAX_FLAVOURS = 10;
+const MAX_LIST_ITEMS = 20;
 
-const ROAST_TYPES = ['Filter', 'Espresso', 'Omni (Filter & Espresso)', 'Unknown'];
-const ROAST_LEVELS = ['Light', 'Medium-Light', 'Medium', 'Medium-Dark', 'Dark', 'Unknown'];
-const BLENDS = ['Single Origin', 'Blend', 'Unknown'];
-const PROCESSES = ['Washed', 'Natural', 'Honey', 'Anaerobic', 'Carbonic Maceration', 'Other', 'Unknown'];
-const SPECIES = ['Arabica', 'Robusta', 'Arabica / Robusta blend', 'Liberica', 'Excelsa', 'Other', 'Unknown'];
-const BREW_METHODS = [
-  'Espresso', 'V60 / Pour-over', 'AeroPress', 'French Press',
-  'Moka Pot', 'Filter (batch / drip)', 'Cold Brew', 'Other',
-];
-const GRIND_SOURCES = ['Ground by me', 'Pre-ground', 'Unknown'];
-const GRIND_SIZES = [
-  'Extra Fine', 'Fine', 'Medium-Fine', 'Medium',
-  'Medium-Coarse', 'Coarse', 'Extra Coarse', 'Unknown',
-];
-const FLAVOURS = [
-  'Chocolate / Cocoa', 'Nutty', 'Caramel / Toffee', 'Fruity (stone / tropical)',
-  'Berry', 'Citrus', 'Floral', 'Spicy', 'Sweet / Sugary', 'Earthy / Herbal',
-];
-const CURRENCIES = {
+export const CURRENCIES = {
   EUR: '\u20ac', USD: '$', GBP: '\u00a3', CHF: 'CHF', SEK: 'kr',
   DKK: 'kr', NOK: 'kr', JPY: '\u00a5', AUD: 'A$', CAD: 'C$',
 };
@@ -85,13 +70,13 @@ export function parseRating(value) {
   return Math.round(n * 4) / 4;
 }
 
-function parseNumber(value, { integer = false, min = 0 } = {}) {
+function parseNumber(value, { integer = false, min = 0, max = Infinity } = {}) {
   const cleaned = cleanText(value, MAX_SHORT);
   if (cleaned == null) return null;
   const m = /(-?\d+(?:[.,]\d+)?)/.exec(cleaned);
   if (!m) return null;
   const n = Number(m[1].replace(',', '.'));
-  if (!Number.isFinite(n) || n < min) return null;
+  if (!Number.isFinite(n) || n < min || n > max) return null;
   return integer ? Math.round(n) : n;
 }
 
@@ -119,7 +104,7 @@ function cleanCurrency(value) {
 }
 
 /**
- * Normalize a brew ratio into a `1:N` style string (coffee:water).
+ * Normalize a brew ratio into a `1:N` style string (leaf/coffee : water).
  * Accepts "1:16", "1 : 16", "1/16", "1-16", or a bare "16" (read as "1:16").
  * Each side must be a positive number up to 1000. Returns null when unusable.
  */
@@ -144,6 +129,11 @@ function cleanRatio(value) {
   }
   if (!inRange(a) || !inRange(b)) return null;
   return `${fmt(a)}:${fmt(b)}`;
+}
+
+function cleanDate(value) {
+  const cleaned = cleanText(value, MAX_SHORT);
+  return cleaned && /^\d{4}-\d{2}-\d{2}$/.test(cleaned) ? cleaned : null;
 }
 
 function cleanAuthor(author) {
@@ -182,10 +172,13 @@ function cleanIssueUrl(value) {
   }
 }
 
-/** Resolve the roaster identity from the dropdown + freeform fields. */
-function resolveRoaster(raw) {
-  const choice = cleanText(raw.roasterChoice, MAX_SHORT);
-  const other = cleanText(raw.roasterOther, MAX_SHORT);
+/**
+ * Resolve a "pick from the list, or type your own" field (roaster / brand)
+ * from its dropdown + freeform pair.
+ */
+export function resolveChoiceOther(raw, field) {
+  const choice = cleanText(raw[field.id], MAX_SHORT);
+  const other = cleanText(raw[`${field.id}Other`], MAX_SHORT);
   if (choice && !/^other\b/i.test(choice)) return choice;
   if (other) return other;
   if (choice) return choice; // "Other (not listed)" with no freeform — keep as-is
@@ -193,90 +186,92 @@ function resolveRoaster(raw) {
 }
 
 /**
- * Sanitize a raw review. Returns a clean review object, or null if it fails a
- * required check (name, roaster, valid rating).
+ * Sanitize one field value. `out` is the partially-built review, so fields that
+ * depend on an earlier field (e.g. a list split only for blends) can read it.
  */
-export function sanitizeReview(raw) {
+function sanitizeField(field, raw, out) {
+  switch (field.type) {
+    case 'text':
+      return cleanText(raw[field.id], field.max ?? MAX_SHORT);
+    case 'longtext':
+      return cleanText(raw[field.id], field.max ?? MAX_TEXT);
+    case 'choiceOther':
+      return resolveChoiceOther(raw, field);
+    case 'enum':
+      return matchEnum(raw[field.id], field.options, field.fallback ?? null);
+    case 'rating':
+      return parseRating(raw[field.id]);
+    case 'flag':
+      return raw[field.id] === true;
+    case 'checklist': {
+      const values = Array.isArray(raw[field.id]) ? raw[field.id] : [];
+      return values
+        .map((v) => matchEnum(v, field.options))
+        .filter(Boolean)
+        .filter((v, i, arr) => arr.indexOf(v) === i)
+        .slice(0, field.max ?? MAX_LIST_ITEMS);
+    }
+    case 'number':
+      return parseNumber(raw[field.id], {
+        integer: field.integer === true,
+        min: field.min ?? 0,
+        max: field.max ?? Infinity,
+      });
+    case 'date':
+      return cleanDate(raw[field.id]);
+    case 'url':
+      return cleanUrl(raw[field.id]);
+    case 'currency':
+      return cleanCurrency(raw[field.id]);
+    case 'ratio':
+      return cleanRatio(raw[field.id]);
+    case 'list': {
+      const text = cleanText(raw[field.id], field.max ?? MAX_TEXT);
+      if (!text) return [];
+      const split = field.splitWhen
+        && out[field.splitWhen.field] === field.splitWhen.equals;
+      const parts = split ? text.split(/,\s+/) : [text];
+      return parts
+        .map((p) => cleanText(p, MAX_SHORT))
+        .filter(Boolean)
+        .slice(0, field.maxItems ?? MAX_LIST_ITEMS);
+    }
+    default:
+      throw new Error(`Unknown field type "${field.type}" for field "${field.id}".`);
+  }
+}
+
+/**
+ * Sanitize a raw review against a product config. Returns a clean review
+ * object, or null if a required field fails its check.
+ *
+ * @param {object} raw - output of parseIssue()
+ * @param {object} product - product config (see products/)
+ */
+export function sanitizeReview(raw, product) {
   if (!raw || typeof raw !== 'object') return null;
 
-  const name = cleanText(raw.name, MAX_SHORT);
-  const roaster = resolveRoaster(raw);
-  const rating = parseRating(raw.rating);
-  if (!name || !roaster || rating == null) return null;
-
-  const blend = matchEnum(raw.blend, BLENDS, 'Unknown');
-
-  // Origins: split blends on ", "; keep single strings whole.
-  let origins = [];
-  const originText = cleanText(raw.origin, MAX_TEXT);
-  if (originText) {
-    const parts = blend === 'Blend' ? originText.split(/,\s+/) : [originText];
-    origins = parts
-      .map((p) => cleanText(p, MAX_SHORT))
-      .filter(Boolean)
-      .slice(0, MAX_ORIGINS);
-  }
-
-  const flavours = Array.isArray(raw.flavours)
-    ? raw.flavours
-        .map((f) => matchEnum(f, FLAVOURS))
-        .filter(Boolean)
-        .filter((f, i, arr) => arr.indexOf(f) === i)
-        .slice(0, MAX_FLAVOURS)
-    : [];
-
-  const currency = cleanCurrency(raw.currency);
-  const cost = parseNumber(raw.cost, { min: 0 });
-  const weightGrams = parseNumber(raw.weight, { integer: true, min: 1 });
-
-  const roastDateRaw = cleanText(raw.roastDate, MAX_SHORT);
-  const roastDate = roastDateRaw && /^\d{4}-\d{2}-\d{2}$/.test(roastDateRaw)
-    ? roastDateRaw
-    : null;
-
-  // Grind is a property of the brew, not of the bean: it stays on the review.
-  // Pre-ground coffee was never ground by the reviewer, so any grinder or
-  // setting they typed anyway is dropped as contradictory.
-  const grindSource = matchEnum(raw.grindSource, GRIND_SOURCES);
-  const preGround = grindSource === 'Pre-ground';
-  const grinder = preGround ? null : cleanText(raw.grinder, MAX_SHORT);
-  const grindSetting = preGround ? null : cleanText(raw.grindSetting, MAX_SHORT);
-
-  return {
+  const review = {
     id: Number.isInteger(raw.id) ? raw.id : null,
     url: cleanIssueUrl(raw.url),
     submittedAt: cleanText(raw.submittedAt, MAX_SHORT),
     author: cleanAuthor(raw.author),
-    name,
-    roaster,
-    roastType: matchEnum(raw.roastType, ROAST_TYPES, 'Unknown'),
-    roastLevel: matchEnum(raw.roastLevel, ROAST_LEVELS, 'Unknown'),
-    blend,
-    rating,
-    decaf: raw.decaf === true,
-    organic: raw.organic === true,
-    roastDate,
-    origins,
-    process: matchEnum(raw.process, PROCESSES),
-    species: matchEnum(raw.species, SPECIES),
-    variety: cleanText(raw.variety, MAX_SHORT),
-    currency,
-    cost,
-    weightGrams,
-    flavours,
-    brewMethod: matchEnum(raw.brewMethod, BREW_METHODS),
-    grindSource,
-    grinder,
-    grindSetting,
-    grindSize: matchEnum(raw.grindSize, GRIND_SIZES),
-    ratio: cleanRatio(raw.ratio),
-    website: cleanUrl(raw.website),
-    notes: cleanText(raw.notes, MAX_TEXT),
-    buyAgain: raw.buyAgain === true,
   };
+
+  for (const field of product.fields) {
+    const value = sanitizeField(field, raw, review);
+    if (field.required && (value == null || value === '')) return null;
+    review[field.id] = value;
+  }
+
+  return product.postProcess ? product.postProcess(review) : review;
 }
 
-export const ALLOWED = {
-  ROAST_TYPES, ROAST_LEVELS, BLENDS, PROCESSES, SPECIES, BREW_METHODS,
-  GRIND_SOURCES, GRIND_SIZES, FLAVOURS, CURRENCIES,
-};
+/** Look up a field definition by id or by role. */
+export function fieldById(product, id) {
+  return product.fields.find((f) => f.id === id) ?? null;
+}
+
+export function fieldByRole(product, role) {
+  return product.fields.find((f) => f.role === role) ?? null;
+}

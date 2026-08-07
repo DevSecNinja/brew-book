@@ -1,24 +1,20 @@
 /** App orchestration: layout, theme, routing, rendering. */
 
 import { el, clear } from './components.js';
-import { loadData, findBean } from './data.js';
+import { loadData, findItem } from './data.js';
 import { parseRoute, onRouteChange, interceptLinks } from './router.js';
 import { renderHome } from './views/home.js';
-import { renderBean } from './views/bean.js';
-
-const SITE_URL = 'https://coffee.ravensberg.org';
-const REPO_URL = 'https://github.com/DevSecNinja/bean-book';
-const NEW_REVIEW_URL = `${REPO_URL}/issues/new?template=bean-review.yml`;
+import { renderItem } from './views/item.js';
+import { itemTitle, itemDescription, itemPath } from './seo.js';
 
 const THEMES = ['auto', 'light', 'dark'];
-const THEME_KEY = 'bean-book-theme';
 
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
 }
 
-function themeToggle() {
-  let current = localStorage.getItem(THEME_KEY) || 'auto';
+function themeToggle(themeKey) {
+  let current = localStorage.getItem(themeKey) || 'auto';
   applyTheme(current);
   const labels = { auto: '🌗 Auto', light: '☀️ Light', dark: '🌙 Dark' };
   const btn = el('button', {
@@ -27,22 +23,22 @@ function themeToggle() {
   });
   btn.addEventListener('click', () => {
     current = THEMES[(THEMES.indexOf(current) + 1) % THEMES.length];
-    localStorage.setItem(THEME_KEY, current);
+    localStorage.setItem(themeKey, current);
     applyTheme(current);
     btn.textContent = labels[current];
   });
   return btn;
 }
 
-function header() {
+function header(product, newReviewUrl) {
   return el('header', { class: 'site-header' },
     el('a', { class: 'brand', href: '/' },
-      el('span', { class: 'brand-mark', 'aria-hidden': 'true', text: '☕' }),
-      el('span', { class: 'brand-name', text: 'Bean Book' }),
+      el('span', { class: 'brand-mark', 'aria-hidden': 'true', text: product.site.mark }),
+      el('span', { class: 'brand-name', text: product.site.name }),
     ),
     el('nav', { class: 'site-nav' },
-      el('a', { class: 'btn ghost', href: NEW_REVIEW_URL, target: '_blank', rel: 'noopener', text: 'Add a review' }),
-      themeToggle(),
+      el('a', { class: 'btn ghost', href: newReviewUrl, target: '_blank', rel: 'noopener', text: product.terms.addReview }),
+      themeToggle(`${product.id}-book-theme`),
     ),
   );
 }
@@ -58,24 +54,14 @@ function setMeta(name, attr, value) {
   tag.setAttribute('content', value);
 }
 
-function updateHead(route, bean) {
-  const path = route.name === 'bean' && bean ? `/bean/${bean.slug}/` : '/';
-  const url = `${SITE_URL}${path}`;
-  let title;
-  let description;
-  if (route.name === 'bean' && bean) {
-    const facts = bean.facts ?? {};
-    const bits = [
-      `Rated ${bean.averageRating}/5 from ${bean.reviewCount} review${bean.reviewCount === 1 ? '' : 's'}`,
-      facts.origins?.length ? facts.origins.join(', ') : null,
-      bean.flavours?.length ? bean.flavours.join(', ') : null,
-    ].filter(Boolean);
-    title = `${bean.name} — ${bean.roaster} | Bean Book`;
-    description = `${bean.name} by ${bean.roaster}. ${bits.join('. ')}.`;
-  } else {
-    title = 'Bean Book — Coffee bean reviews';
-    description = 'A hand-kept log of coffee beans worth remembering — ratings, roasters and tasting notes. Untappd, but for coffee.';
-  }
+function updateHead(route, item, product) {
+  const path = route.name === 'item' && item ? itemPath(item, product) : '/';
+  const url = `${product.site.url}${path}`;
+  const title = route.name === 'item' && item ? itemTitle(item, product) : product.site.title;
+  const description = route.name === 'item' && item
+    ? itemDescription(item, product)
+    : product.site.description;
+
   document.title = title;
   setMeta('description', 'name', description);
   setMeta('og:title', 'property', title);
@@ -92,7 +78,8 @@ function updateHead(route, bean) {
   canonical.setAttribute('href', url);
 }
 
-function footer(data, buildId) {
+function footer(data, buildId, product) {
+  const repoUrl = product.site.repoUrl;
   const shortHash = (buildId || '').split('-')[0] || 'dev';
   const isRealHash = /^[0-9a-f]{7,40}$/i.test(shortHash);
   const generated = data?.generatedAt
@@ -100,13 +87,13 @@ function footer(data, buildId) {
     : null;
   const build = isRealHash
     ? el('a', {
-        class: 'build', href: `${REPO_URL}/commit/${shortHash}`,
+        class: 'build', href: `${repoUrl}/commit/${shortHash}`,
         target: '_blank', rel: 'noopener', title: 'View this build’s commit', text: shortHash,
       })
     : el('code', { class: 'build', title: 'Build commit', text: shortHash });
   return el('footer', { class: 'site-footer' },
     el('p', {},
-      el('a', { href: REPO_URL, target: '_blank', rel: 'noopener', text: 'Bean Book on GitHub' }),
+      el('a', { href: repoUrl, target: '_blank', rel: 'noopener', text: `${product.site.name} on GitHub` }),
       ' · reviews sourced from GitHub Issues',
     ),
     el('p', { class: 'muted small' },
@@ -116,48 +103,54 @@ function footer(data, buildId) {
   );
 }
 
-export async function initApp(root, { buildId } = {}) {
+/**
+ * @param {HTMLElement} root
+ * @param {{buildId?:string, product:object}} options
+ */
+export async function initApp(root, { buildId, product } = {}) {
   clear(root);
+  const newReviewUrl = `${product.site.repoUrl}/issues/new?template=${product.issue.template}`;
   const content = el('main', { class: 'content', id: 'content', tabindex: '-1' });
 
   let data;
   try {
     data = await loadData();
   } catch {
-    root.append(header(), el('main', { class: 'content' },
+    root.append(header(product, newReviewUrl), el('main', { class: 'content' },
       el('div', { class: 'empty' },
-        el('h1', { text: 'Nothing brewing yet' }),
+        el('h1', { text: product.site.emptyTitle }),
         el('p', { text: 'No reviews have been published yet. Check back soon!' }),
-        el('a', { class: 'btn primary', href: NEW_REVIEW_URL, target: '_blank', rel: 'noopener', text: '☕ Add the first review' }),
+        el('a', { class: 'btn primary', href: newReviewUrl, target: '_blank', rel: 'noopener', text: product.terms.firstReview }),
       ),
-    ), footer(null, buildId));
+    ), footer(null, buildId, product));
     return;
   }
 
-  root.append(header(), content, footer(data, buildId));
+  root.append(header(product, newReviewUrl), content, footer(data, buildId, product));
 
   const render = (route) => {
-    let bean = null;
-    if (route.name === 'bean') {
-      bean = findBean(data, route.slug);
-      if (bean) {
-        renderBean(content, bean);
+    let item = null;
+    if (route.name === 'item') {
+      item = findItem(data, route.slug);
+      if (item) {
+        renderItem(content, item, product);
       } else {
         clear(content);
         content.append(el('div', { class: 'empty' },
-          el('h1', { text: 'Bean not found' }),
-          el('a', { class: 'btn', href: '/', text: '← Back to all beans' }),
+          el('h1', { text: `${product.terms.Item} not found` }),
+          el('a', { class: 'btn', href: '/', text: `← Back to all ${product.terms.items}` }),
         ));
       }
     } else {
-      renderHome(content, data);
+      renderHome(content, data, product);
     }
-    updateHead(route, bean);
+    updateHead(route, item, product);
     content.focus({ preventScroll: true });
     window.scrollTo({ top: 0 });
   };
 
-  onRouteChange(render);
+  const base = product.terms.routeBase;
+  onRouteChange(base, render);
   interceptLinks();
-  render(parseRoute());
+  render(parseRoute(base));
 }

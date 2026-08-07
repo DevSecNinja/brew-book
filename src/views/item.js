@@ -1,9 +1,8 @@
-/** Bean detail view: aggregated header, facts, and individual reviews. */
+/** Item detail view: aggregated header, facts, and individual reviews. */
 
 import { el, clear, append, safeUrl } from '../components.js';
 import {
-  starBar, formatRating, formatCost, formatWeight, formatValuePer100g,
-  formatDate, formatGrind, initials,
+  starBar, formatRating, formatValuePer100g, formatDate, initials, factValue, fmt,
 } from '../format.js';
 
 function factRow(label, value) {
@@ -11,7 +10,7 @@ function factRow(label, value) {
   const text = Array.isArray(value) ? value.join(', ') : String(value);
   return el('div', { class: 'fact' },
     el('dt', { text: label }),
-    el('dd', { text: text }),
+    el('dd', { text }),
   );
 }
 
@@ -25,18 +24,9 @@ function avatar(author) {
   return el('span', { class: 'avatar avatar-fallback', 'aria-hidden': 'true', text: initials(author?.login) });
 }
 
-function reviewCard(review) {
+function reviewCard(review, product) {
   const author = review.author ?? {};
-  const meta = [];
-  const price = formatCost(review.cost, review.currency);
-  if (price) meta.push(price);
-  const weight = formatWeight(review.weightGrams);
-  if (weight) meta.push(weight);
-  if (review.brewMethod) meta.push(review.brewMethod);
-  const grind = formatGrind(review);
-  if (grind) meta.push(grind);
-  if (review.ratio) meta.push(`Ratio ${review.ratio}`);
-  if (review.buyAgain) meta.push('Would buy again');
+  const meta = product.reviewMeta(review, fmt);
   const date = formatDate(review.submittedAt);
 
   const who = author.login
@@ -66,52 +56,49 @@ function reviewCard(review) {
   );
 }
 
-export function renderBean(root, bean) {
+export function renderItem(root, item, product) {
   clear(root);
-  const facts = bean.facts ?? {};
+  const facts = item.facts ?? {};
 
-  const back = el('a', { class: 'back', href: '/', text: '← All beans' });
+  const back = el('a', { class: 'back', href: '/', text: `← All ${product.terms.items}` });
 
   const header = el('section', { class: 'bean-header' },
     el('div', { class: 'bean-title' },
-      el('h1', { text: bean.name }),
-      el('p', { class: 'bean-roaster', text: bean.roaster }),
+      el('h1', { text: item.name }),
+      el('p', { class: 'bean-roaster', text: item.maker }),
     ),
     el('div', { class: 'bean-score' },
-      el('span', { class: 'rating-badge big', text: formatRating(bean.averageRating) }),
-      starBar(bean.averageRating, bean.reviewCount),
-      el('span', { class: 'muted', text: `${bean.reviewCount} review${bean.reviewCount === 1 ? '' : 's'}` }),
+      el('span', { class: 'rating-badge big', text: formatRating(item.averageRating) }),
+      starBar(item.averageRating, item.reviewCount),
+      el('span', { class: 'muted', text: `${item.reviewCount} review${item.reviewCount === 1 ? '' : 's'}` }),
     ),
   );
 
   const factList = el('dl', { class: 'facts' },
-    factRow('Roast type', facts.roastType !== 'Unknown' ? facts.roastType : null),
-    factRow('Roast level', facts.roastLevel !== 'Unknown' ? facts.roastLevel : null),
-    factRow('Origin type', facts.blend !== 'Unknown' ? facts.blend : null),
-    factRow('Origin', facts.origins),
-    factRow('Process', facts.process),
-    factRow('Species', facts.species),
-    factRow('Variety', facts.variety),
-    factRow('Decaf', facts.decaf ? 'Yes' : null),
-    factRow('Organic', facts.organic ? 'Yes' : null),
-    factRow('Roast date', facts.roastDate),
-    factRow('Value', bean.valuePer100g ? `from ${formatValuePer100g(bean.valuePer100g)}` : null),
+    product.facts.map((entry) => {
+      if (entry.special === 'valuePer100g') {
+        return item.valuePer100g
+          ? factRow(entry.label, `from ${formatValuePer100g(item.valuePer100g)}`)
+          : null;
+      }
+      return factRow(entry.label, factValue(entry, facts));
+    }),
   );
 
-  const flavours = bean.flavours && bean.flavours.length
+  const flavours = item.flavours && item.flavours.length
     ? el('div', { class: 'flavour-block' },
         el('h2', { class: 'section-title', text: 'Flavour profile' }),
-        el('div', { class: 'tags' }, bean.flavours.map((f) => el('span', { class: 'tag', text: f }))),
+        el('div', { class: 'tags' }, item.flavours.map((f) => el('span', { class: 'tag', text: f }))),
       )
     : null;
 
   const website = facts.website
-    ? el('a', { class: 'btn', href: safeUrl(facts.website), target: '_blank', rel: 'noopener', text: 'Visit bean page ↗' })
+    ? el('a', { class: 'btn', href: safeUrl(facts.website), target: '_blank', rel: 'noopener', text: product.terms.websiteLink })
     : null;
 
   const reviews = el('section', { class: 'reviews' },
-    el('h2', { class: 'section-title', text: `Reviews (${bean.reviewCount})` }),
-    ...bean.reviews.map(reviewCard),
+    el('h2', { class: 'section-title', text: `Reviews (${item.reviewCount})` }),
+    ...item.reviews.map((r) => reviewCard(r, product)),
   );
 
   append(

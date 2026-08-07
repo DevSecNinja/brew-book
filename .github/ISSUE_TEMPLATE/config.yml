@@ -3,3 +3,6 @@ contact_links:
   - name: ☕ Browse the Bean Book
     url: https://github.com/DevSecNinja/bean-book/issues?q=label%3Abean-review
     about: See all the coffee beans that have been reviewed so far.
+  - name: 🍃 Browse the Leaf Book
+    url: https://github.com/DevSecNinja/bean-book/issues?q=label%3Atea-review
+    about: See all the teas that have been reviewed so far.

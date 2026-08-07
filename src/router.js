@@ -1,24 +1,28 @@
 /**
  * Path-based router (History API).
  *
- * Real, crawlable URLs:
- *   /            -> home (bean gallery)
- *   /bean/:slug/ -> bean detail
+ * Real, crawlable URLs (`base` comes from the product config — `bean` for
+ * Bean Book, `tea` for Leaf Book):
+ *   /              -> home (gallery)
+ *   /<base>/:slug/ -> item detail
  *
  * Clicks on internal links are intercepted for snappy in-app navigation, but
  * the links remain real paths so each page is a prerendered, indexable URL.
  */
 
-const BEAN_RE = /\/bean\/([^/]+)\/?$/;
-
-export function parseRoute(loc = window.location) {
-  const m = BEAN_RE.exec(loc.pathname);
-  if (m) return { name: 'bean', slug: decodeURIComponent(m[1]) };
+/**
+ * @param {string} base route base segment, e.g. "bean"
+ * @param {Location|{pathname:string}} [loc]
+ */
+export function parseRoute(base, loc = window.location) {
+  const re = new RegExp(`/${String(base).replace(/[^a-z0-9-]/gi, '')}/([^/]+)/?$`);
+  const m = re.exec(loc.pathname);
+  if (m) return { name: 'item', slug: decodeURIComponent(m[1]) };
   return { name: 'home' };
 }
 
-export function onRouteChange(handler) {
-  window.addEventListener('popstate', () => handler(parseRoute()));
+export function onRouteChange(base, handler) {
+  window.addEventListener('popstate', () => handler(parseRoute(base)));
 }
 
 export function navigate(path) {
