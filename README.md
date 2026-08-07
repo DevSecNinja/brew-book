@@ -4,10 +4,10 @@
 review logs built from one shared core in this repository, sourced entirely from
 GitHub Issues. No backend, no database.
 
-| Site | What | Domain | Cloudflare project |
-|------|------|--------|--------------------|
-| ☕ **Bean Book** | Coffee beans | [coffee.ravensberg.org](https://coffee.ravensberg.org) | `bean-book` |
-| 🍃 **Leaf Book** | Tea | [tea.ravensberg.org](https://tea.ravensberg.org) | `leaf-book` |
+| Site             | What         | Domain                                                 | Cloudflare project |
+| ---------------- | ------------ | ------------------------------------------------------ | ------------------ |
+| ☕ **Bean Book** | Coffee beans | [coffee.ravensberg.org](https://coffee.ravensberg.org) | `bean-book`        |
+| 🍃 **Leaf Book** | Tea          | [tea.ravensberg.org](https://tea.ravensberg.org)       | `leaf-book`        |
 
 ## How it works
 
@@ -44,16 +44,16 @@ up on the matching site.
 
 ## Publishing, updating & removing reviews
 
-The build is **stateless**: every relevant event re-fetches *all* reviews that
+The build is **stateless**: every relevant event re-fetches _all_ reviews that
 are **closed** and carry the **`published`** label, regenerates
 `data/<product>.json` and redeploys. There is no "processed" marker to manage —
 `published` is simply the on/off gate.
 
-| I want to… | Do this | What happens |
-|------------|---------|--------------|
-| **Publish** a review | Close the issue with the `published` label (the maintainer does this; valid submissions from the repo owner are auto-published) | The `closed`/`labeled` event triggers a rebuild and the item appears |
-| **Update** a published review | **Just edit the issue** (title or body). No need to reopen or touch labels | The `edited` event triggers a rebuild; the new content replaces the old on the next deploy |
-| **Unpublish** a review | Remove the `published` label, **or** reopen the issue | The `unlabeled`/`reopened` event rebuilds; the item disappears (it no longer matches "closed + published") |
+| I want to…                    | Do this                                                                                                                         | What happens                                                                                               |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Publish** a review          | Close the issue with the `published` label (the maintainer does this; valid submissions from the repo owner are auto-published) | The `closed`/`labeled` event triggers a rebuild and the item appears                                       |
+| **Update** a published review | **Just edit the issue** (title or body). No need to reopen or touch labels                                                      | The `edited` event triggers a rebuild; the new content replaces the old on the next deploy                 |
+| **Unpublish** a review        | Remove the `published` label, **or** reopen the issue                                                                           | The `unlabeled`/`reopened` event rebuilds; the item disappears (it no longer matches "closed + published") |
 
 Changes go live once the **Pages** run finishes (~1–2 min) and the CDN
 refreshes. A daily scheduled run and the manual **Run workflow** button are

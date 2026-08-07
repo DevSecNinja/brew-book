@@ -57,14 +57,14 @@ GitHub Issue (bean-review / tea-review form)
   `name`/`maker`/`rating`/`cost`/`weight`/`flavours`/`website`/`notes`) and
   `scope: 'item'` (merged into `facts` vs. kept on the review). `facts`,
   `badges`, `filters` and `reviewMeta()` drive both renderers.
-- **Stateless rebuilds.** `.github/workflows/pages.yml` re-fetches *all* closed +
+- **Stateless rebuilds.** `.github/workflows/pages.yml` re-fetches _all_ closed +
   `published` issues for each product on push, issue events, a daily cron and
   manual dispatch. There is no "already processed" marker; publishing /
   unpublishing / editing an issue is the whole state machine.
 - **`.github/workflows/validate-review.yml`** runs `scripts/validate-issue.js` on
   new/edited unpublished review issues, resolves the product from the form label,
   comments the result, and auto-publishes when the author is the repo `OWNER` and
-  the review is valid. `scripts/lib/validate.js` deliberately reuses the *same*
+  the review is valid. `scripts/lib/validate.js` deliberately reuses the _same_
   parse+sanitize code as the build, so "valid" means "survives the build
   unchanged".
 - **Two renderers of the same data.** `scripts/build-site.js` emits SEO HTML
@@ -72,12 +72,12 @@ GitHub Issue (bean-review / tea-review form)
   for the same route. Anything user-visible must be implemented in **both** —
   which is why shared logic lives in `src/text.js` (pure formatters), `src/seo.js`
   (titles/descriptions/paths) and the config's `reviewMeta()`, all importable
-  from Node *and* the browser.
+  from Node _and_ the browser.
 - **`dist/<id>/` is the whole deploy artifact**: generated `index.html`,
   `404.html`, `manifest.webmanifest`, `theme.css`, `robots.txt`, `sitemap.xml`,
   `<routeBase>/<slug>/index.html`, plus copies of `src/`, `styles.css`,
   `service-worker.js` and `assets/icons/<id>/`. `products/<id>.js` is copied to
-  `dist/<id>/src/product.config.js`, which is the *only* thing `src/main.js`
+  `dist/<id>/src/product.config.js`, which is the _only_ thing `src/main.js`
   imports to pick a product — every other `src/` module takes `product` as a
   parameter (which is also how the tests supply it).
 - **`__BUILD_ID__`** is a literal placeholder in `service-worker.js`,
@@ -107,7 +107,7 @@ GitHub Issue (bean-review / tea-review form)
   `products/<id>.js` → its `facts`/`badges`/`filters`/`reviewMeta()` if visible →
   `specs/001-bean-book-website/data-model.md` → tests → refresh
   `data/<id>.sample.json`. `sanitize.js`/`validate.js` usually need **no**
-  change; only a genuinely new *field type* touches the core.
+  change; only a genuinely new _field type_ touches the core.
 - **Item facts vs. review fields.** Intrinsic properties (roast level, process,
   species, tea type, oxidation, harvest…) get `scope: 'item'` and land in
   `item.facts` from the most recent non-empty value; purchase- and brew-specific
