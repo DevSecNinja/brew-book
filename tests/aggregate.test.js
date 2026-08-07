@@ -104,7 +104,7 @@ describe('aggregate', () => {
     const [item] = aggregate([teaReview], tea);
     expect(Object.keys(item.facts).sort()).toEqual([
       'blend', 'caffeineFree', 'cultivar', 'form', 'harvest', 'harvestYear',
-      'organic', 'origins', 'oxidation', 'teaType', 'website',
+      'ingredients', 'organic', 'origins', 'oxidation', 'teaType', 'website',
     ]);
     expect(item.facts).not.toHaveProperty('waterTemp');
     expect(item.slug).toBe('bitterleaf-teas-shui-xian');

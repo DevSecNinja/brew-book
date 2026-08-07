@@ -41,8 +41,9 @@ const BREW_METHODS = [
 ];
 const FLAVOURS = [
   'Floral', 'Fruity (stone / tropical)', 'Citrus', 'Berry', 'Grassy / Vegetal',
-  'Nutty', 'Malty', 'Honey / Sweet', 'Chocolate / Cocoa', 'Spicy', 'Smoky',
-  'Earthy / Woody', 'Creamy / Buttery', 'Mineral', 'Umami', 'Astringent',
+  'Minty', 'Herbal', 'Nutty', 'Malty', 'Honey / Sweet', 'Chocolate / Cocoa',
+  'Spicy', 'Smoky', 'Earthy / Woody', 'Creamy / Buttery', 'Mineral', 'Umami',
+  'Astringent',
 ];
 
 const tea = {
@@ -136,11 +137,13 @@ const tea = {
     { id: 'origins', label: 'Origin', type: 'list', scope: 'item', splitWhen: { field: 'blend', equals: 'Blend' } },
     { id: 'oxidation', label: 'Oxidation / processing', type: 'enum', options: OXIDATIONS, scope: 'item' },
     { id: 'cultivar', label: 'Cultivar', type: 'text', scope: 'item' },
+    { id: 'ingredients', label: 'Ingredients', type: 'longtext', max: 500, scope: 'item' },
     { id: 'currency', label: 'Currency', type: 'currency' },
     { id: 'cost', label: 'Cost', type: 'number', role: 'cost', min: 0 },
     { id: 'weightGrams', label: 'Weight (grams)', type: 'number', role: 'weight', integer: true, min: 1 },
     { id: 'flavours', label: 'Flavour profiles', type: 'checklist', options: FLAVOURS, role: 'flavours', max: 10 },
     { id: 'brewMethod', label: 'How did you brew it?', type: 'enum', options: BREW_METHODS },
+    { id: 'gramsPerCup', label: 'Grams per cup', type: 'number', min: 0.1, max: 100 },
     { id: 'waterTemp', label: 'Water temperature (°C)', type: 'number', integer: true, min: 1, max: 100 },
     { id: 'steepTime', label: 'Steep time', type: 'text' },
     { id: 'steeps', label: 'Number of infusions', type: 'number', integer: true, min: 1, max: 99 },
@@ -157,6 +160,7 @@ const tea = {
     { field: 'origins', label: 'Origin' },
     { field: 'oxidation', label: 'Oxidation' },
     { field: 'cultivar', label: 'Cultivar' },
+    { field: 'ingredients', label: 'Ingredients' },
     { field: 'harvest', label: 'Harvest' },
     { field: 'harvestYear', label: 'Harvest year' },
     { field: 'caffeineFree', label: 'Caffeine free' },
@@ -208,9 +212,13 @@ const tea = {
     return review;
   },
 
-  /** "95 °C · 3 min · 5 infusions" — how this cup was actually made. */
+  /**
+   * "2 g/cup · 95 °C · 3 min · 5 infusions" — how this cup was actually made,
+   * in the order you'd do it.
+   */
   steepText(review) {
     return [
+      review.gramsPerCup != null ? `${review.gramsPerCup} g/cup` : null,
       review.waterTemp != null ? `${review.waterTemp} °C` : null,
       review.steepTime,
       review.steeps != null ? `${review.steeps} infusion${review.steeps === 1 ? '' : 's'}` : null,

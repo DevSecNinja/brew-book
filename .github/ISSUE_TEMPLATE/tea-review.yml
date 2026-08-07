@@ -228,6 +228,18 @@ body:
     validations:
       required: false
 
+  - type: textarea
+    id: ingredients
+    attributes:
+      label: Ingredients
+      description: >
+        For a blend or tisane, the ingredient list from the packet. Copy it as
+        printed — this is often the only thing that distinguishes one flavoured
+        blend from another.
+      placeholder: e.g. Rooibos, orange, grapefruit, safflower blossom, mint, orange blossom, flavouring
+    validations:
+      required: false
+
   # ------------------------------------------------------------------
   # Additional info (optional)
   # ------------------------------------------------------------------
@@ -283,6 +295,8 @@ body:
         - label: Citrus
         - label: Berry
         - label: Grassy / Vegetal
+        - label: Minty
+        - label: Herbal
         - label: Nutty
         - label: Malty
         - label: Honey / Sweet
@@ -307,6 +321,17 @@ body:
         - Cold brew
         - Iced
         - Other
+    validations:
+      required: false
+
+  - type: input
+    id: grams_per_cup
+    attributes:
+      label: Grams per cup
+      description: >
+        How much tea you used per cup. Most packets dose this way rather than
+        as a ratio, because they don't know how big your cup is.
+      placeholder: e.g. 2
     validations:
       required: false
 
