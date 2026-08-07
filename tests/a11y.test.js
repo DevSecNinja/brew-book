@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vitest';
 import axe from 'axe-core';
-import { renderHome } from '../src/views/home.js';
+import { renderHome, emptyState } from '../src/views/home.js';
 import { renderItem } from '../src/views/item.js';
 import { coffee, tea, sampleItem } from './helpers.js';
 
@@ -56,6 +56,45 @@ describe('home view', () => {
 
   it('has no serious accessibility violations', async () => {
     renderHome(main, data, coffee);
+    expect(await noSeriousViolations(main)).toEqual([]);
+  });
+});
+
+describe('empty log', () => {
+  const empty = { generatedAt: '2026-01-01T00:00:00Z', buildId: 'abc123', items: [] };
+
+  it('invites the first review instead of showing filters over an empty grid', () => {
+    renderHome(main, empty, tea);
+    expect(main.querySelector('.empty')).toBeTruthy();
+    expect(main.textContent).toContain(tea.site.emptyTitle);
+    // The search box and filter controls would only be confusing here.
+    expect(main.querySelector('#search')).toBeNull();
+    expect(main.querySelector('.controls')).toBeNull();
+    expect(main.textContent).not.toContain('match your filters');
+  });
+
+  it('still shows the hero so the site is identifiable', () => {
+    renderHome(main, empty, tea);
+    expect(main.querySelector('.hero')).toBeTruthy();
+    expect(main.textContent).toContain('Leaf Book');
+  });
+
+  it('links the call to action at the product\u2019s own issue form', () => {
+    renderHome(main, empty, tea);
+    const cta = main.querySelector('.empty a.btn');
+    expect(cta.getAttribute('href')).toContain('template=tea-review.yml');
+    expect(cta.textContent).toBe(tea.terms.firstReview);
+  });
+
+  it('renders the same block the load-failure path uses', () => {
+    main.append(emptyState(coffee));
+    const cta = main.querySelector('.empty a.btn');
+    expect(cta.getAttribute('href')).toContain('template=bean-review.yml');
+    expect(main.textContent).toContain(coffee.site.emptyTitle);
+  });
+
+  it('has no serious accessibility violations', async () => {
+    renderHome(main, empty, tea);
     expect(await noSeriousViolations(main)).toEqual([]);
   });
 });
