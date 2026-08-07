@@ -243,6 +243,10 @@ function itemPage(item, product) {
         ${flavourBlock}
         <section class="reviews"><h2 class="section-title">Reviews (${item.reviewCount})</h2>${item.reviews.map((r) => reviewHtml(r, product)).join('')}</section>
       </main>
+      <footer class="site-footer">
+        <p><a href="${esc(product.site.repoUrl)}" target="_blank" rel="noopener">${esc(product.site.name)} on GitHub</a> · reviews sourced from GitHub Issues</p>
+        <p>Also visit <a href="${esc(product.site.relatedSite.url)}">${esc(product.site.relatedSite.name)}</a>.</p>
+      </footer>
     </div>`;
 
   return page({

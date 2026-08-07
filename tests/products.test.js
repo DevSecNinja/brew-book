@@ -27,6 +27,15 @@ describe('product registry', () => {
     expect(unique((p) => p.issue.template)).toBe(true);
     expect(unique((p) => p.data.file)).toBe(true);
   });
+
+  it('cross-links each site to the other site', () => {
+    for (const product of products) {
+      const relatedProduct = products.find((candidate) => candidate.site.url === product.site.relatedSite.url);
+      expect(relatedProduct).toBeDefined();
+      expect(relatedProduct.site.name).toBe(product.site.relatedSite.name);
+      expect(relatedProduct.id).not.toBe(product.id);
+    }
+  });
 });
 
 describe.each(products)('$id config', (product) => {

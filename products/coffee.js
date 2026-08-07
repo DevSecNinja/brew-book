@@ -53,6 +53,7 @@ const coffee = {
     schemaDescription: 'Untappd for coffee beans — a hand-kept log of coffee bean reviews.',
     url: 'https://coffee.ravensberg.org',
     repoUrl: 'https://github.com/DevSecNinja/brew-book',
+    relatedSite: { name: 'Leaf Book', url: 'https://tea.ravensberg.org' },
     mark: '☕',
     locale: 'en_GB',
     schemaCategory: 'Coffee',

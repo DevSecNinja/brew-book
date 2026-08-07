@@ -79,7 +79,7 @@ function updateHead(route, item, product) {
   canonical.setAttribute('href', url);
 }
 
-function footer(data, buildId, product) {
+export function footer(data, buildId, product) {
   const repoUrl = product.site.repoUrl;
   const shortHash = (buildId || '').split('-')[0] || 'dev';
   const isRealHash = /^[0-9a-f]{7,40}$/i.test(shortHash);
@@ -96,6 +96,11 @@ function footer(data, buildId, product) {
     el('p', {},
       el('a', { href: repoUrl, target: '_blank', rel: 'noopener', text: `${product.site.name} on GitHub` }),
       ' · reviews sourced from GitHub Issues',
+    ),
+    el('p', {},
+      'Also visit ',
+      el('a', { href: product.site.relatedSite.url, text: product.site.relatedSite.name }),
+      '.',
     ),
     el('p', { class: 'muted small' },
       generated ? `Data updated ${generated} · ` : '',
