@@ -1,5 +1,5 @@
 {
-  "name": "bean-book",
+  "name": "brew-book",
   "version": "0.1.0",
   "description": "Untappd for coffee beans and tea — static, offline PWAs (Bean Book & Leaf Book) built from GitHub Issues.",
   "private": true,

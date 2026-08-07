@@ -6,7 +6,7 @@ import { coffee, tea } from './helpers.js';
 function raw(overrides = {}) {
   return {
     id: 1,
-    url: 'https://github.com/DevSecNinja/bean-book/issues/1',
+    url: 'https://github.com/DevSecNinja/brew-book/issues/1',
     submittedAt: '2026-01-01T00:00:00Z',
     author: { login: 'octocat', avatarUrl: 'https://avatars.githubusercontent.com/u/1?v=4', profileUrl: 'https://github.com/octocat' },
     name: 'Guji Highlands',

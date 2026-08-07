@@ -52,7 +52,7 @@ const coffee = {
     description: 'A hand-kept log of coffee beans worth remembering — ratings, roasters and tasting notes. Untappd, but for coffee.',
     schemaDescription: 'Untappd for coffee beans — a hand-kept log of coffee bean reviews.',
     url: 'https://coffee.ravensberg.org',
-    repoUrl: 'https://github.com/DevSecNinja/bean-book',
+    repoUrl: 'https://github.com/DevSecNinja/brew-book',
     mark: '☕',
     locale: 'en_GB',
     schemaCategory: 'Coffee',

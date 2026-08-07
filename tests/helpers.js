@@ -76,7 +76,7 @@ export function sampleItem(overrides = {}) {
 export function issue({ body, ...overrides } = {}) {
   return {
     number: 7,
-    html_url: 'https://github.com/DevSecNinja/bean-book/issues/7',
+    html_url: 'https://github.com/DevSecNinja/brew-book/issues/7',
     created_at: '2026-01-01T00:00:00Z',
     state: 'closed',
     user: {

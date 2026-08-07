@@ -55,7 +55,7 @@ const tea = {
     description: 'A hand-kept log of teas worth remembering — ratings, brands and tasting notes. Untappd, but for tea.',
     schemaDescription: 'Untappd for tea — a hand-kept log of tea reviews.',
     url: 'https://tea.ravensberg.org',
-    repoUrl: 'https://github.com/DevSecNinja/bean-book',
+    repoUrl: 'https://github.com/DevSecNinja/brew-book',
     mark: '🍃',
     locale: 'en_GB',
     schemaCategory: 'Tea',

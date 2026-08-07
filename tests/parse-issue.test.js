@@ -58,7 +58,7 @@ describe('parseIssue', () => {
   it('keys raw values by field id and carries issue metadata', () => {
     const raw = parseIssue(issue({ body: BODY }), coffee);
     expect(raw.id).toBe(7);
-    expect(raw.url).toBe('https://github.com/DevSecNinja/bean-book/issues/7');
+    expect(raw.url).toBe('https://github.com/DevSecNinja/brew-book/issues/7');
     expect(raw.author.login).toBe('octocat');
     expect(raw.name).toBe('Guji Highlands');
     expect(raw.roastType).toBe('Filter');

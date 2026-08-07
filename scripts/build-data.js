@@ -24,7 +24,7 @@ import { aggregate } from './lib/aggregate.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 export const ROOT = join(__dirname, '..');
 
-const REPO = process.env.GITHUB_REPOSITORY || 'DevSecNinja/bean-book';
+const REPO = process.env.GITHUB_REPOSITORY || 'DevSecNinja/brew-book';
 const TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || '';
 
 async function fetchPublishedIssues(product) {
