@@ -99,6 +99,11 @@ jobs:
       id-token: write
       issues: write
       pull-requests: write
+      # Unused — we deploy to Cloudflare, not GitHub Pages — but the reusable
+      # workflow's `deploy` job declares `pages: write`, and GitHub validates
+      # nested-job permissions when the run starts, before `github-pages: false`
+      # skips that job. Without it the whole workflow fails to start.
+      pages: write
     with:
       # renovate: datasource=npm depName=wrangler
       wrangler-version: "4.116.0"
@@ -124,6 +129,11 @@ jobs:
       id-token: write
       issues: write
       pull-requests: write
+      # Unused — we deploy to Cloudflare, not GitHub Pages — but the reusable
+      # workflow's `deploy` job declares `pages: write`, and GitHub validates
+      # nested-job permissions when the run starts, before `github-pages: false`
+      # skips that job. Without it the whole workflow fails to start.
+      pages: write
     with:
       # renovate: datasource=npm depName=wrangler
       wrangler-version: "4.116.0"
