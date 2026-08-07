@@ -49,9 +49,13 @@ describe('coffee grindText', () => {
 });
 
 describe('tea steepText', () => {
-  it('joins temperature, time and infusion count', () => {
-    expect(tea.steepText({ waterTemp: 98, steepTime: '15 s', steeps: 8 }))
-      .toBe('98 °C · 15 s · 8 infusions');
+  it('joins dose, temperature, time and infusion count', () => {
+    expect(tea.steepText({ gramsPerCup: 5, waterTemp: 98, steepTime: '15 s', steeps: 8 }))
+      .toBe('5 g/cup · 98 °C · 15 s · 8 infusions');
+  });
+
+  it('keeps a fractional dose', () => {
+    expect(tea.steepText({ gramsPerCup: 2.5 })).toBe('2.5 g/cup');
   });
 
   it('singularises a single infusion and skips missing parts', () => {
@@ -76,11 +80,12 @@ describe('reviewMeta', () => {
   it('builds the tea metadata line', () => {
     const meta = tea.reviewMeta({
       cost: 18, currency: { code: 'EUR', symbol: '€' }, weightGrams: 50,
-      brewMethod: 'Gongfu (gaiwan / small pot)', waterTemp: 98, steepTime: '15 s',
-      steeps: 8, ratio: '1:15', buyAgain: false,
+      brewMethod: 'Gongfu (gaiwan / small pot)', gramsPerCup: 5, waterTemp: 98,
+      steepTime: '15 s', steeps: 8, ratio: '1:15', buyAgain: false,
     }, fmt);
     expect(meta).toEqual([
-      '€18.00', '50 g', 'Gongfu (gaiwan / small pot)', '98 °C · 15 s · 8 infusions', 'Ratio 1:15',
+      '€18.00', '50 g', 'Gongfu (gaiwan / small pot)',
+      '5 g/cup · 98 °C · 15 s · 8 infusions', 'Ratio 1:15',
     ]);
   });
 });

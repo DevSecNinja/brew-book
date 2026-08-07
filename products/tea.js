@@ -143,6 +143,7 @@ const tea = {
     { id: 'weightGrams', label: 'Weight (grams)', type: 'number', role: 'weight', integer: true, min: 1 },
     { id: 'flavours', label: 'Flavour profiles', type: 'checklist', options: FLAVOURS, role: 'flavours', max: 10 },
     { id: 'brewMethod', label: 'How did you brew it?', type: 'enum', options: BREW_METHODS },
+    { id: 'gramsPerCup', label: 'Grams per cup', type: 'number', min: 0.1, max: 100 },
     { id: 'waterTemp', label: 'Water temperature (°C)', type: 'number', integer: true, min: 1, max: 100 },
     { id: 'steepTime', label: 'Steep time', type: 'text' },
     { id: 'steeps', label: 'Number of infusions', type: 'number', integer: true, min: 1, max: 99 },
@@ -211,9 +212,13 @@ const tea = {
     return review;
   },
 
-  /** "95 °C · 3 min · 5 infusions" — how this cup was actually made. */
+  /**
+   * "2 g/cup · 95 °C · 3 min · 5 infusions" — how this cup was actually made,
+   * in the order you'd do it.
+   */
   steepText(review) {
     return [
+      review.gramsPerCup != null ? `${review.gramsPerCup} g/cup` : null,
       review.waterTemp != null ? `${review.waterTemp} °C` : null,
       review.steepTime,
       review.steeps != null ? `${review.steeps} infusion${review.steeps === 1 ? '' : 's'}` : null,

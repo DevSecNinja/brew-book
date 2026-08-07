@@ -199,6 +199,21 @@ describe('sanitizeReview — tea schema', () => {
       .toEqual(['Minty', 'Herbal', 'Citrus']);
   });
 
+  it('reads a per-cup dose the way packets write it', () => {
+    expect(teaRaw({ gramsPerCup: '2' }).gramsPerCup).toBe(2);
+    expect(teaRaw({ gramsPerCup: '2,5 gram per kop' }).gramsPerCup).toBe(2.5);
+    // A dose stays a dose: not rounded to an integer like the packet weight.
+    expect(teaRaw({ gramsPerCup: '1.5' }).gramsPerCup).toBe(1.5);
+    expect(teaRaw({ gramsPerCup: 'a spoonful' }).gramsPerCup).toBeNull();
+    expect(teaRaw({ gramsPerCup: '500' }).gramsPerCup).toBeNull();
+  });
+
+  it('keeps the per-cup dose on the review, not the tea', () => {
+    // How much *this reviewer* used, like water temperature and steep time.
+    const field = tea.fields.find((f) => f.id === 'gramsPerCup');
+    expect(field.scope).toBeUndefined();
+  });
+
   it('has no coffee fields at all', () => {
     const review = teaRaw();
     expect(review).not.toHaveProperty('roastLevel');

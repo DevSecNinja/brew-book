@@ -325,6 +325,17 @@ body:
       required: false
 
   - type: input
+    id: grams_per_cup
+    attributes:
+      label: Grams per cup
+      description: >
+        How much tea you used per cup. Most packets dose this way rather than
+        as a ratio, because they don't know how big your cup is.
+      placeholder: e.g. 2
+    validations:
+      required: false
+
+  - type: input
     id: water_temp
     attributes:
       label: Water temperature (°C)

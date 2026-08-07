@@ -71,7 +71,13 @@ tisane it is often the only thing that distinguishes one product from another â€
 usually empty for a blend.
 
 Review scope: `currency`, `cost`, `weightGrams`, `flavours`, `brewMethod`,
-`waterTemp`, `steepTime`, `steeps`, `ratio`, `notes`, `buyAgain`.
+`gramsPerCup`, `waterTemp`, `steepTime`, `steeps`, `ratio`, `notes`,
+`buyAgain`.
+
+`gramsPerCup` and `ratio` both describe strength. Packets almost always dose as
+"X grams per cup" because they don't know the size of your cup, so a reviewer
+can record that without inventing a water volume; `ratio` is for when the
+leaf-to-water figure is actually known.
 
 ## Item (Bean / Tea)
 
