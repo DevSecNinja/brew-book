@@ -1,5 +1,5 @@
 /**
- * Validate a bean-review issue body against the review "schema".
+ * Validate a review issue body against the product's review "schema".
  *
  * Reuses the exact same parse + sanitize logic as the build pipeline, so a
  * review that validates here is guaranteed to survive the build unchanged.
@@ -10,66 +10,98 @@
 import { parseIssue } from './parse-issue.js';
 import { sanitizeReview, parseRating, cleanText } from './sanitize.js';
 
+/** Message used when an optional value can't be understood and gets dropped. */
+const DROPPED = {
+  enum: (label) => `**${label}** wasn’t recognized and will be omitted.`,
+  number: (label) => `**${label}** couldn’t be read as a number; it will be omitted.`,
+  date: (label) => `**${label}** should be in \`YYYY-MM-DD\` format; it will be omitted.`,
+  url: (label) => `**${label}** must be an \`http(s)\` URL; it will be omitted.`,
+  ratio: (label) => `**${label}** couldn’t be read as a \`1:N\` ratio; it will be omitted.`,
+  checklist: (label) => `Some **${label}** weren’t recognized and will be omitted.`,
+};
+
 /**
  * @param {object} issue - a GitHub issue payload ({ number, user, body, ... })
+ * @param {object} product - product config (see products/)
  * @returns {{ ok: boolean, errors: string[], warnings: string[], review: object|null }}
  */
-export function validateIssue(issue) {
-  const raw = parseIssue(issue);
+export function validateIssue(issue, product) {
+  const raw = parseIssue(issue, product);
   const errors = [];
   const warnings = [];
 
   // --- Required fields ---
-  if (!cleanText(raw.name)) {
-    errors.push('**Bean name** is required.');
-  }
-
-  const choice = cleanText(raw.roasterChoice);
-  const other = cleanText(raw.roasterOther);
-  if (!choice && !other) {
-    errors.push('**Roaster** is required.');
-  } else if (choice && /^other\b/i.test(choice) && !other) {
-    errors.push('You picked **“Other (not listed)”** for the roaster — please also fill in the **“Roaster (if not listed)”** field.');
-  }
-
-  if (parseRating(raw.rating) == null) {
-    errors.push('**Rating** must be a value from **1.00 to 5.00 in 0.25 steps** (e.g. `3.25`).');
+  for (const field of product.fields.filter((f) => f.required)) {
+    if (field.type === 'choiceOther') {
+      const choice = cleanText(raw[field.id]);
+      const other = cleanText(raw[`${field.id}Other`]);
+      if (!choice && !other) {
+        errors.push(`**${field.label}** is required.`);
+      } else if (choice && /^other\b/i.test(choice) && !other) {
+        errors.push(
+          `You picked **“${choice}”** for the ${field.label.toLowerCase()} — please also fill in `
+          + `the **“${field.otherLabel}”** field.`,
+        );
+      }
+    } else if (field.type === 'rating') {
+      if (parseRating(raw[field.id]) == null) {
+        errors.push(`**${field.label}** must be a value from **1.00 to 5.00 in 0.25 steps** (e.g. \`3.25\`).`);
+      }
+    } else if (!cleanText(raw[field.id])) {
+      errors.push(`**${field.label}** is required.`);
+    }
   }
 
   // --- Optional fields that would be dropped as unrecognized ---
-  const review = sanitizeReview(raw);
+  const review = sanitizeReview(raw, product);
   if (review) {
-    if (raw.process && !review.process) warnings.push('**Process** wasn’t recognized and will be omitted.');
-    if (raw.species && !review.species) warnings.push('**Species** wasn’t recognized and will be omitted.');
-    if (raw.brewMethod && !review.brewMethod) warnings.push('**How did you brew it?** wasn’t recognized and will be omitted.');
-    if (raw.grindSource && !review.grindSource) warnings.push('**Pre-ground or ground yourself?** wasn’t recognized and will be omitted.');
-    if (raw.grindSize && !review.grindSize) warnings.push('**Grind size** wasn’t recognized and will be omitted.');
-    if (review.grindSource === 'Pre-ground' && (cleanText(raw.grinder) || cleanText(raw.grindSetting))) {
-      warnings.push('You marked the coffee as **Pre-ground**, so the **Grinder** and **Grind setting** will be omitted.');
+    for (const field of product.fields) {
+      const given = raw[field.id];
+      switch (field.type) {
+        case 'enum':
+          // Enums with a fallback ("Unknown") never drop a value silently.
+          if (given && field.fallback == null && !review[field.id]) {
+            warnings.push(DROPPED.enum(field.label));
+          }
+          break;
+        case 'number':
+          if (given && review[field.id] == null) warnings.push(DROPPED.number(field.label));
+          break;
+        case 'date':
+          if (given && !review[field.id]) warnings.push(DROPPED.date(field.label));
+          break;
+        case 'url':
+          if (given && !review[field.id]) warnings.push(DROPPED.url(field.label));
+          break;
+        case 'ratio':
+          if (given && !review[field.id]) warnings.push(DROPPED.ratio(field.label));
+          break;
+        case 'checklist':
+          if ((given?.length ?? 0) > (review[field.id]?.length ?? 0)) {
+            warnings.push(DROPPED.checklist(field.label));
+          }
+          break;
+        default:
+          break;
+      }
     }
-    if (raw.ratio && !review.ratio) warnings.push('**Brew ratio** couldn’t be read as a `1:N` ratio; it will be omitted.');
-    if (raw.website && !review.website) warnings.push('**Bean website** must be an `http(s)` URL; it will be omitted.');
-    if (raw.cost && review.cost == null) warnings.push('**Cost** couldn’t be read as a number; it will be omitted.');
-    if (raw.weight && review.weightGrams == null) warnings.push('**Weight (grams)** couldn’t be read as a number; it will be omitted.');
-    if (raw.roastDate && !review.roastDate) warnings.push('**Roast date** should be in `YYYY-MM-DD` format; it will be omitted.');
-    const rawFlavours = Array.isArray(raw.flavours) ? raw.flavours.length : 0;
-    if (rawFlavours > review.flavours.length) {
-      warnings.push('Some **Flavour profiles** weren’t recognized and will be omitted.');
-    }
+    warnings.push(...(product.extraWarnings?.(raw, review) ?? []));
   }
 
   return { ok: errors.length === 0 && review != null, errors, warnings, review };
 }
 
 /** Build a Markdown comment body from a validation result. */
-export function buildComment(result, { login } = {}) {
+export function buildComment(result, { login, product } = {}) {
   const who = login ? `@${login}` : 'there';
+  const item = product?.terms?.item ?? 'item';
+  const formLabel = product?.issue?.formLabel ?? 'review';
   const lines = [];
 
   if (result.ok) {
     lines.push('## ✅ Review looks good!');
     lines.push('');
-    lines.push(`Thanks ${who} — your bean review passed validation and is ready to be published.`);
+    lines.push(`Thanks ${who} — your ${item} review passed validation and is ready to be published.`);
     if (result.warnings.length) {
       lines.push('');
       lines.push('A few optional fields will be tidied up when it goes live:');
@@ -91,6 +123,6 @@ export function buildComment(result, { login } = {}) {
   }
 
   lines.push('');
-  lines.push('<sub>🤖 Automated bean-review validation.</sub>');
+  lines.push(`<sub>🤖 Automated ${formLabel} validation.</sub>`);
   return lines.join('\n');
 }

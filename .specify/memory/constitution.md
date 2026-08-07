@@ -1,15 +1,17 @@
 # Bean Book Constitution
 
-<!-- Governing principles for the Bean Book coffee-review website. -->
+<!-- Governing principles for the Bean Book (coffee) and Leaf Book (tea)
+     review websites, which share one core in this repository. -->
 
 ## Core Principles
 
 ### I. No Backend, Static-First
 
-The site MUST be a fully static site deployable to GitHub Pages with no runtime
-server, database, or third-party hosted service. All dynamic data is produced at
-build time from GitHub Issues and shipped as static JSON. If a feature appears to
-require a backend, it MUST be redesigned as a build-time or client-only capability.
+Every site MUST be a fully static site deployable to a static host (Cloudflare
+Pages) with no runtime server, database, or third-party hosted service. All
+dynamic data is produced at build time from GitHub Issues and shipped as static
+JSON. If a feature appears to require a backend, it MUST be redesigned as a
+build-time or client-only capability.
 
 ### II. Minimal, Trusted Dependencies
 
@@ -41,10 +43,19 @@ The UI MUST be usable with a keyboard and screen reader: semantic HTML, labelled
 controls, sufficient colour contrast, and visible focus. It MUST support light and
 dark themes (respecting the system preference) and work on mobile and desktop.
 
-### VI. Owner-Moderated Publishing
+### VI. One Core, Many Products
 
-Only issues that are **closed** and carry the `published` label are built into the
-site. Open, unlabeled, or spam submissions never appear. Publication is an explicit
+The repository serves more than one review site (Bean Book for coffee, Leaf Book
+for tea). The pipeline, the SPA and the prerenderer MUST stay generic and be
+driven by a product config in `products/`; nothing product-specific may be
+hard-coded in `scripts/lib/`, `src/` or the build scripts. Adding a product MUST
+NOT require changing the shared core, and every user-visible feature MUST be
+implemented once and work for all products.
+
+### VII. Owner-Moderated Publishing
+
+Only issues that are **closed** and carry both the `published` label and their
+product's review-form label are built into that product's site. Open, unlabeled, or spam submissions never appear. Publication is an explicit
 owner action; the pipeline enforces this gate.
 
 ## Development Workflow
@@ -55,8 +66,11 @@ owner action; the pipeline enforces this gate.
 - Tooling is pinned and managed with **mise**; dependencies are Renovate-managed.
 - Automated tests (vitest) cover the issue parser, sanitizer, and aggregator, plus
   an accessibility smoke check. Tests MUST pass before deploy.
-- CI/CD lives in a single combined pipeline that tests, generates the data
-  artifact from published issues, stamps the build id, and deploys to GitHub Pages.
+- CI/CD tests and builds every product in this repository's own job, then hands
+  each site to the shared `DevSecNinja/.github` `pages.yml` workflow as an
+  artifact to deploy to its own Cloudflare Pages project. No credential is
+  passed into the shared workflow. Pull request builds run without a GitHub
+  token and therefore render the committed sample fixtures.
 
 ## Governance
 
@@ -66,4 +80,4 @@ change that relaxes Principle III (input safety) or Principle I (no backend)
 requires explicit maintainer approval and a documented threat/impact assessment.
 All plans and reviews MUST verify compliance with these principles.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-08 | **Last Amended**: 2026-07-08
+**Version**: 2.0.0 | **Ratified**: 2026-07-08 | **Last Amended**: 2026-08-06

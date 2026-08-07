@@ -2,37 +2,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import axe from 'axe-core';
 import { renderHome } from '../src/views/home.js';
-import { renderBean } from '../src/views/bean.js';
+import { renderItem } from '../src/views/item.js';
+import { coffee, tea, sampleItem } from './helpers.js';
 
-function sampleBean(overrides = {}) {
-  return {
-    slug: 'roaster-bean',
-    key: 'roaster\u241fbean',
-    name: 'Test Bean',
-    roaster: 'Test Roaster',
-    averageRating: 3.5,
-    reviewCount: 1,
-    facts: {
-      roastType: 'Filter', roastLevel: 'Light', blend: 'Blend', decaf: false,
-      organic: true, species: 'Arabica', process: 'Natural', variety: null,
-      origins: ['Ethiopia'], website: 'https://example.com/bean', roastDate: null,
-    },
-    valuePer100g: { value: 5, currency: { code: 'EUR', symbol: '€' } },
-    flavours: ['Berry', 'Citrus'],
-    reviews: [{
-      id: 1, url: 'https://github.com/o/r/issues/1', submittedAt: '2026-01-01T00:00:00Z',
-      author: { login: 'octocat', avatarUrl: 'https://avatars.githubusercontent.com/u/1', profileUrl: 'https://github.com/octocat' },
-      name: 'Test Bean', roaster: 'Test Roaster', rating: 3.5,
-      currency: { code: 'EUR', symbol: '€' }, cost: 12.5, weightGrams: 250,
-      flavours: ['Berry'], brewMethod: 'V60 / Pour-over', grindSource: 'Ground by me',
-      grinder: 'Kingrinder K6', grindSetting: '100 clicks', grindSize: 'Medium',
-      notes: 'Lovely cup', buyAgain: true,
-    }],
-    ...overrides,
-  };
-}
-
-const data = { generatedAt: '2026-01-01T00:00:00Z', buildId: 'abc123', beans: [sampleBean()] };
+const data = { generatedAt: '2026-01-01T00:00:00Z', buildId: 'abc123', items: [sampleItem()] };
 
 let main;
 beforeEach(() => {
@@ -50,29 +23,53 @@ async function noSeriousViolations(context) {
 }
 
 describe('home view', () => {
-  it('renders every bean with a link and rating', () => {
-    renderHome(main, data);
+  it('renders every item with a link and rating', () => {
+    renderHome(main, data, coffee);
     expect(main.querySelectorAll('.card').length).toBe(1);
     expect(main.textContent).toContain('Test Bean');
     expect(main.querySelector('a.card').getAttribute('href')).toContain('/bean/');
   });
 
+  it('renders one control per configured filter', () => {
+    renderHome(main, data, coffee);
+    for (const filter of coffee.filters) {
+      if (filter.kind === 'flags') continue;
+      expect(main.querySelector(`#${filter.id}`)).toBeTruthy();
+    }
+  });
+
+  it('uses the product route base and vocabulary', () => {
+    const teaData = {
+      ...data,
+      items: [sampleItem({
+        slug: 'ippodo-sencha',
+        name: 'Sencha',
+        maker: 'Ippodo Tea',
+        facts: { teaType: 'Green', form: 'Loose leaf', blend: 'Single Origin', origins: ['Japan'] },
+      })],
+    };
+    renderHome(main, teaData, tea);
+    expect(main.querySelector('a.card').getAttribute('href')).toContain('/tea/');
+    expect(main.textContent).toContain('Leaf Book');
+    expect(main.textContent).toContain('1 of 1 tea');
+  });
+
   it('has no serious accessibility violations', async () => {
-    renderHome(main, data);
+    renderHome(main, data, coffee);
     expect(await noSeriousViolations(main)).toEqual([]);
   });
 });
 
-describe('bean view', () => {
+describe('item view', () => {
   it('renders reviews with author identity', () => {
-    renderBean(main, sampleBean());
+    renderItem(main, sampleItem(), coffee);
     expect(main.textContent).toContain('@octocat');
     expect(main.textContent).toContain('Lovely cup');
     expect(main.querySelector('.avatar')).toBeTruthy();
   });
 
-  it('shows price & weight on the review, and value-per-100g on the bean', () => {
-    renderBean(main, sampleBean());
+  it('shows price & weight on the review, and value-per-100g on the item', () => {
+    renderItem(main, sampleItem(), coffee);
     const review = main.querySelector('.review');
     expect(review.textContent).toContain('€12.50');
     expect(review.textContent).toContain('250 g');
@@ -81,34 +78,67 @@ describe('bean view', () => {
     expect(main.querySelector('.facts').textContent).not.toContain('€12.50');
   });
 
-  it('shows the grind on the review, never on the bean facts', () => {
-    renderBean(main, sampleBean());
+  it('shows the grind on the review, never in the item facts', () => {
+    renderItem(main, sampleItem(), coffee);
     expect(main.querySelector('.review').textContent).toContain('Kingrinder K6 @ 100 clicks (Medium)');
     expect(main.querySelector('.facts').textContent).not.toContain('Kingrinder');
   });
 
+  it('hides "Unknown" enum facts', () => {
+    const item = sampleItem();
+    item.facts.roastLevel = 'Unknown';
+    renderItem(main, item, coffee);
+    expect(main.querySelector('.facts').textContent).not.toContain('Unknown');
+  });
+
   it('never renders untrusted notes as markup (XSS-safe)', () => {
-    const bean = sampleBean();
-    bean.reviews[0].notes = 'evil <script>alert(1)</script>';
-    bean.name = '<img src=x onerror=alert(1)>';
-    renderBean(main, bean);
+    const item = sampleItem();
+    item.reviews[0].notes = 'evil <script>alert(1)</script>';
+    item.name = '<img src=x onerror=alert(1)>';
+    renderItem(main, item, coffee);
     // The literal text is present, but no script/img element was created from it.
     expect(main.innerHTML).not.toContain('<script');
     expect(main.querySelectorAll('script').length).toBe(0);
     expect(main.querySelector('h1').textContent).toContain('<img');
   });
 
-  it('renders nothing at all for a bean without flavour profiles', () => {
-    const bean = sampleBean({ flavours: [] });
-    bean.reviews[0].flavours = [];
-    renderBean(main, bean);
+  it('renders nothing at all for an item without flavour profiles', () => {
+    const item = sampleItem({ flavours: [] });
+    item.reviews[0].flavours = [];
+    renderItem(main, item, coffee);
     expect(main.querySelector('.flavour-block')).toBeNull();
     // A skipped block must never leak as the literal text "null".
     expect(main.textContent).not.toContain('null');
   });
 
+  it('renders tea facts with the tea vocabulary', () => {
+    const item = sampleItem({
+      name: 'Shui Xian',
+      maker: 'Bitterleaf Teas',
+      facts: {
+        teaType: 'Oolong', form: 'Loose leaf', blend: 'Single Origin', origins: ['China'],
+        oxidation: 'Roasted', cultivar: 'Shui Xian', harvest: 'Autumn flush',
+        harvestYear: 2025, caffeineFree: false, organic: false, website: null,
+      },
+      reviews: [{
+        id: 9, url: null, submittedAt: '2026-01-01T00:00:00Z', author: { login: 'octocat' },
+        rating: 4.75, currency: { code: 'EUR', symbol: '€' }, cost: 18, weightGrams: 50,
+        flavours: ['Mineral'], brewMethod: 'Gongfu (gaiwan / small pot)',
+        waterTemp: 98, steepTime: '15 s', steeps: 8, ratio: '1:15',
+        notes: 'Cocoa and wet stone.', buyAgain: true,
+      }],
+    });
+    renderItem(main, item, tea);
+    const facts = main.querySelector('.facts').textContent;
+    expect(facts).toContain('Oolong');
+    expect(facts).toContain('Harvest year');
+    expect(facts).not.toContain('Roast level');
+    expect(main.querySelector('.review').textContent).toContain('98 °C · 15 s · 8 infusions');
+    expect(main.querySelector('.back').textContent).toContain('All teas');
+  });
+
   it('has no serious accessibility violations', async () => {
-    renderBean(main, sampleBean());
+    renderItem(main, sampleItem(), coffee);
     expect(await noSeriousViolations(main)).toEqual([]);
   });
 });

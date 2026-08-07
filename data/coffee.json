@@ -1,14 +1,15 @@
 {
-  "generatedAt": "2026-07-29T06:58:35.130Z",
+  "generatedAt": "2026-08-07T11:19:47.784Z",
   "buildId": "__BUILD_ID__",
-  "beanCount": 2,
+  "product": "coffee",
+  "itemCount": 2,
   "reviewCount": 2,
-  "beans": [
+  "items": [
     {
       "slug": "wakuli-de-parade-x-wakuli-blend",
       "key": "wakuli␟de parade x wakuli blend",
       "name": "De Parade x Wakuli Blend",
-      "roaster": "Wakuli",
+      "maker": "Wakuli",
       "averageRating": 3.5,
       "reviewCount": 1,
       "valuePer100g": {
@@ -24,16 +25,16 @@
         "blend": "Blend",
         "decaf": false,
         "organic": false,
-        "species": "Arabica",
-        "process": "Natural",
-        "variety": null,
+        "roastDate": null,
         "origins": [
           "Guatemala",
           "Honduras",
           "Brazil"
         ],
-        "website": "https://www.wakuli.com/products/parade-wakuli-blend",
-        "roastDate": null
+        "process": "Natural",
+        "species": "Arabica",
+        "variety": null,
+        "website": "https://www.wakuli.com/products/parade-wakuli-blend"
       },
       "flavours": [
         "Berry"
@@ -41,7 +42,7 @@
       "reviews": [
         {
           "id": 2,
-          "url": "https://github.com/DevSecNinja/bean-book/issues/2",
+          "url": "https://github.com/DevSecNinja/brew-book/issues/2",
           "submittedAt": "2026-07-08T08:19:43Z",
           "author": {
             "login": "DevSecNinja",
@@ -49,7 +50,7 @@
             "profileUrl": "https://github.com/DevSecNinja"
           },
           "name": "De Parade x Wakuli Blend",
-          "roaster": "Wakuli",
+          "maker": "Wakuli",
           "roastType": "Omni (Filter & Espresso)",
           "roastLevel": "Medium",
           "blend": "Blend",
@@ -90,7 +91,7 @@
       "slug": "simon-levelt-guji-highlands",
       "key": "simon levelt␟guji highlands",
       "name": "Guji Highlands",
-      "roaster": "Simon Lévelt",
+      "maker": "Simon Lévelt",
       "averageRating": 2.5,
       "reviewCount": 1,
       "valuePer100g": {
@@ -106,14 +107,14 @@
         "blend": "Blend",
         "decaf": false,
         "organic": true,
-        "species": "Arabica",
-        "process": null,
-        "variety": null,
+        "roastDate": null,
         "origins": [
           "Ethiopia"
         ],
-        "website": "https://www.simonlevelt.nl/nl/guji-highlands/17524-M.html",
-        "roastDate": null
+        "process": null,
+        "species": "Arabica",
+        "variety": null,
+        "website": "https://www.simonlevelt.nl/nl/guji-highlands/17524-M.html"
       },
       "flavours": [
         "Fruity (stone / tropical)"
@@ -121,7 +122,7 @@
       "reviews": [
         {
           "id": 1,
-          "url": "https://github.com/DevSecNinja/bean-book/issues/1",
+          "url": "https://github.com/DevSecNinja/brew-book/issues/1",
           "submittedAt": "2026-07-08T08:07:05Z",
           "author": {
             "login": "DevSecNinja",
@@ -129,7 +130,7 @@
             "profileUrl": "https://github.com/DevSecNinja"
           },
           "name": "Guji Highlands",
-          "roaster": "Simon Lévelt",
+          "maker": "Simon Lévelt",
           "roastType": "Filter",
           "roastLevel": "Light",
           "blend": "Blend",

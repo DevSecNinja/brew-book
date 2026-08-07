@@ -1,0 +1,389 @@
+name: 🍃 Tea Review
+description: Log a tea you've tried and give it a rating. It will show up on the Leaf Book site.
+title: "[Tea]: <Brand> – <Tea name>"
+labels:
+  - tea-review
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Welcome to Leaf Book 🍃
+        Thanks for logging a tea! Fill in what you know — only a handful of fields are required.
+        The **Additional info** at the bottom is optional but makes the entry much richer on the site.
+
+        > Tip: the more accurate the details (brand, origin, harvest), the easier it is to compare teas later.
+
+  # ------------------------------------------------------------------
+  # The basics (required)
+  # ------------------------------------------------------------------
+  - type: markdown
+    attributes:
+      value: "### 🍃 The basics"
+
+  - type: input
+    id: name
+    attributes:
+      label: Tea name
+      description: The name of the tea as it appears on the packet.
+      placeholder: e.g. Darjeeling First Flush, Sencha Yabukita, Shui Xian
+    validations:
+      required: true
+
+  - type: dropdown
+    id: brand
+    attributes:
+      label: Brand
+      description: >
+        Pick the brand from the list. If it isn't listed, choose **Other (not listed)**
+        and fill in the "Brand (if not listed)" field below.
+      options:
+        - Other (not listed)
+        - Simon Lévelt
+        - Or Tea?
+        - Pickwick
+        - Zenzo Tea
+        - Betjeman & Barton
+        - Mariage Frères
+        - Dammann Frères
+        - Kusmi Tea
+        - Ronnefeldt
+        - Teekanne
+        - Whittard of Chelsea
+        - Twinings
+        - Fortnum & Mason
+        - Rare Tea Company
+        - Postcard Teas
+        - Yunomi
+        - Ippodo Tea
+        - Marukyu Koyamaen
+        - What-Cha
+        - Bitterleaf Teas
+        - white2tea
+        - Yunnan Sourcing
+        - Teasenz
+        - Home / Self-blended
+    validations:
+      required: true
+
+  - type: input
+    id: brand_other
+    attributes:
+      label: Brand (if not listed)
+      description: Only fill this in if you selected **Other (not listed)** above.
+      placeholder: e.g. My Local Tea Shop
+    validations:
+      required: false
+
+  - type: dropdown
+    id: tea_type
+    attributes:
+      label: Tea type
+      options:
+        - White
+        - Green
+        - Yellow
+        - Oolong
+        - Black
+        - Dark (Pu-erh / Hei Cha)
+        - Herbal / Tisane
+        - Rooibos
+        - Matcha
+        - Unknown
+    validations:
+      required: false
+
+  - type: dropdown
+    id: form
+    attributes:
+      label: Leaf form
+      description: How the tea comes packaged.
+      options:
+        - Loose leaf
+        - Tea bag
+        - Sachet
+        - Compressed (cake / tuo / brick)
+        - Powder
+        - Unknown
+    validations:
+      required: false
+
+  - type: dropdown
+    id: blend
+    attributes:
+      label: Single origin or blend?
+      options:
+        - Single Origin
+        - Blend
+        - Unknown
+    validations:
+      required: false
+
+  - type: dropdown
+    id: rating
+    attributes:
+      label: Rating
+      description: Your overall score, from 1 to 5 in steps of 0.25.
+      options:
+        - "5.00 – Perfect"
+        - "4.75"
+        - "4.50"
+        - "4.25"
+        - "4.00 – Excellent"
+        - "3.75"
+        - "3.50"
+        - "3.25"
+        - "3.00 – Good"
+        - "2.75"
+        - "2.50"
+        - "2.25"
+        - "2.00 – OK"
+        - "1.75"
+        - "1.50"
+        - "1.25"
+        - "1.00 – Poor"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: caffeine_free
+    attributes:
+      label: Caffeine free
+      options:
+        - label: This tea is caffeine free
+          required: false
+
+  - type: checkboxes
+    id: organic
+    attributes:
+      label: Organic
+      options:
+        - label: This is a certified organic tea
+          required: false
+
+  # ------------------------------------------------------------------
+  # Origin & processing (optional)
+  # ------------------------------------------------------------------
+  - type: markdown
+    attributes:
+      value: "### 🌍 Origin & processing (optional)"
+
+  - type: dropdown
+    id: harvest
+    attributes:
+      label: Harvest
+      description: Which picking the leaves come from.
+      options:
+        - First flush (spring)
+        - Second flush (summer)
+        - Autumn flush
+        - Monsoon
+        - Winter
+        - Unknown
+    validations:
+      required: false
+
+  - type: input
+    id: harvest_year
+    attributes:
+      label: Harvest year
+      description: The year the leaves were picked.
+      placeholder: e.g. 2026
+    validations:
+      required: false
+
+  - type: input
+    id: origin
+    attributes:
+      label: Origin
+      description: >
+        Country (and region / garden if you know it). For a blend, separate the
+        origins with a comma and a space, e.g. `India, Sri Lanka`.
+      placeholder: e.g. India, Darjeeling — Margaret's Hope
+    validations:
+      required: false
+
+  - type: dropdown
+    id: oxidation
+    attributes:
+      label: Oxidation / processing
+      options:
+        - Unoxidised
+        - Lightly oxidised
+        - Semi-oxidised
+        - Fully oxidised
+        - Post-fermented
+        - Roasted
+        - Smoked
+        - Other
+        - Unknown
+    validations:
+      required: false
+
+  - type: input
+    id: cultivar
+    attributes:
+      label: Cultivar
+      description: The tea plant cultivar, if the packet names one.
+      placeholder: e.g. Yabukita, Da Bai Hao, AV2
+    validations:
+      required: false
+
+  # ------------------------------------------------------------------
+  # Additional info (optional)
+  # ------------------------------------------------------------------
+  - type: markdown
+    attributes:
+      value: "### 📋 Additional info (optional)"
+
+  - type: dropdown
+    id: currency
+    attributes:
+      label: Currency
+      description: Currency for the cost below. Defaults to EUR.
+      options:
+        - EUR (€)
+        - USD ($)
+        - GBP (£)
+        - CHF
+        - SEK
+        - DKK
+        - NOK
+        - JPY (¥)
+        - AUD
+        - CAD
+    validations:
+      required: false
+
+  - type: input
+    id: cost
+    attributes:
+      label: Cost
+      description: Price you paid for the packet (numbers only, in the currency selected above).
+      placeholder: e.g. 12.50
+    validations:
+      required: false
+
+  - type: input
+    id: weight
+    attributes:
+      label: Weight (grams)
+      description: Packet weight in grams.
+      placeholder: e.g. 100
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: flavour_profiles
+    attributes:
+      label: Flavour profiles
+      description: Tick everything you tasted.
+      options:
+        - label: Floral
+        - label: Fruity (stone / tropical)
+        - label: Citrus
+        - label: Berry
+        - label: Grassy / Vegetal
+        - label: Nutty
+        - label: Malty
+        - label: Honey / Sweet
+        - label: Chocolate / Cocoa
+        - label: Spicy
+        - label: Smoky
+        - label: Earthy / Woody
+        - label: Creamy / Buttery
+        - label: Mineral
+        - label: Umami
+        - label: Astringent
+
+  - type: dropdown
+    id: brew_method
+    attributes:
+      label: How did you brew it?
+      options:
+        - Gongfu (gaiwan / small pot)
+        - Western (mug / teapot)
+        - Grandpa style
+        - Whisked (matcha)
+        - Cold brew
+        - Iced
+        - Other
+    validations:
+      required: false
+
+  - type: input
+    id: water_temp
+    attributes:
+      label: Water temperature (°C)
+      description: Whole degrees Celsius, 1–100.
+      placeholder: e.g. 85
+    validations:
+      required: false
+
+  - type: input
+    id: steep_time
+    attributes:
+      label: Steep time
+      description: How long you steeped it (free text).
+      placeholder: e.g. 2 min 30 s
+    validations:
+      required: false
+
+  - type: input
+    id: steeps
+    attributes:
+      label: Number of infusions
+      description: How many times you re-steeped the same leaves.
+      placeholder: e.g. 5
+    validations:
+      required: false
+
+  - type: input
+    id: brew_ratio
+    attributes:
+      label: Brew ratio
+      description: Leaf to water, as `1:N`. A bare number is read as `1:N`.
+      placeholder: e.g. 1:50
+    validations:
+      required: false
+
+  - type: input
+    id: website
+    attributes:
+      label: Tea website
+      description: Link to the tea's product page (http/https only).
+      placeholder: https://…
+    validations:
+      required: false
+
+  - type: textarea
+    id: review_notes
+    attributes:
+      label: Review notes
+      description: What did you think? Aroma, liquor, mouthfeel, how it changed across infusions…
+      placeholder: Bright and brisk, muscatel on the second infusion…
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: buy_again
+    attributes:
+      label: Would you buy it again?
+      options:
+        - label: Yes, I'd buy this again
+          required: false
+
+  - type: textarea
+    id: photo
+    attributes:
+      label: Photo
+      description: Drag a photo of the packet or the brewed cup in here (optional).
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      options:
+        - label: This is my own honest review and I'm okay with it appearing on the Leaf Book site.
+          required: true

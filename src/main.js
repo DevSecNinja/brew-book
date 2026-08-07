@@ -1,23 +1,25 @@
 import { initApp } from './app.js';
+// Written by scripts/build-site.js: a verbatim copy of products/<id>.js.
+import product from './product.config.js';
 
 const BUILD_ID = '__BUILD_ID__';
 
 const root = document.getElementById('app');
 if (root) {
-  initApp(root, { buildId: BUILD_ID }).catch((err) => {
+  initApp(root, { buildId: BUILD_ID, product }).catch((err) => {
     console.error(err);
     root.innerHTML = '';
     const p = document.createElement('p');
     p.setAttribute('role', 'alert');
     p.className = 'error';
-    p.textContent = 'Failed to load Bean Book. Please refresh.';
+    p.textContent = `Failed to load ${product.site.name}. Please refresh.`;
     root.append(p);
   });
 }
 
 // Register the service worker for PWA / offline support.
-// The `?v=` query string and BUILD_ID are stamped at deploy time so every
-// commit triggers an update (see .github/workflows/ci-cd.yml).
+// The `?v=` query string and BUILD_ID are stamped at build time so every
+// commit triggers an update (see scripts/build-site.js).
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     const hadController = !!navigator.serviceWorker.controller;

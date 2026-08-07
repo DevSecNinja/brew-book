@@ -1,14 +1,19 @@
 ---
-# Repo-specific labels for bean-book, synced by the Label Sync workflow.
+# Repo-specific labels for brew-book (Bean Book + Leaf Book), synced by the
+# Label Sync workflow.
 # Org-wide base labels live in .github/labels-base.yaml (managed by config-sync).
 
 - name: bean-review
   color: "6f4e37"
   description: A submitted coffee bean review
 
+- name: tea-review
+  color: "3f7d3f"
+  description: A submitted tea review
+
 - name: published
   color: "0e8a16"
-  description: Published to the Bean Book site
+  description: Published to the Bean Book / Leaf Book site
 
 - name: area/site
   color: "1d76db"

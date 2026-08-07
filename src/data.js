@@ -1,30 +1,30 @@
-/** Load and lightly shape the generated beans data. */
+/** Load and lightly shape the generated item data. */
 
 let cache = null;
 
 /**
- * Fetch data/beans.json (relative to the app, so it works on a Pages project
- * path and offline via the service worker cache).
- * @returns {Promise<{generatedAt:string, buildId:string, beans:object[]}>}
+ * Fetch the generated data file. The build writes it to a product-agnostic
+ * path so the shared SPA needs no per-product wiring.
+ * @returns {Promise<{generatedAt:string, buildId:string, items:object[]}>}
  */
 export async function loadData() {
   if (cache) return cache;
-  const res = await fetch('/data/beans.json', { cache: 'no-cache' });
+  const res = await fetch('/data/items.json', { cache: 'no-cache' });
   if (!res.ok) throw new Error(`Failed to load data: ${res.status}`);
   const data = await res.json();
-  if (!data || !Array.isArray(data.beans)) {
+  if (!data || !Array.isArray(data.items)) {
     throw new Error('Malformed data file');
   }
   cache = data;
   return data;
 }
 
-/** Find a bean by slug. */
-export function findBean(data, slug) {
-  return data.beans.find((b) => b.slug === slug) ?? null;
+/** Find an item by slug. */
+export function findItem(data, slug) {
+  return data.items.find((i) => i.slug === slug) ?? null;
 }
 
-/** Distinct sorted roaster names, for the filter control. */
-export function roasters(data) {
-  return [...new Set(data.beans.map((b) => b.roaster))].sort((a, b) => a.localeCompare(b));
+/** Distinct sorted maker names, for the filter control. */
+export function makers(data) {
+  return [...new Set(data.items.map((i) => i.maker))].sort((a, b) => a.localeCompare(b));
 }

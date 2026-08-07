@@ -1,8 +1,10 @@
-name: Validate bean review
+---
+name: Validate review
 
-# When a bean-review issue is opened or edited, check its body against the
-# review schema, comment the result, and — if the submitter is the repo owner
-# and the review is valid — publish it (add `published` + close).
+# When a bean-review or tea-review issue is opened or edited, check its body
+# against that product's review schema, comment the result, and — if the
+# submitter is the repo owner and the review is valid — publish it
+# (add `published` + close). The product is resolved from the form label.
 on:
   issues:
     types: [opened, edited]
@@ -18,9 +20,10 @@ concurrency:
 jobs:
   validate:
     name: Validate & maybe publish
-    # Only bean-review submissions; skip anything already published.
+    # Only review submissions; skip anything already published.
     if: >-
-      contains(github.event.issue.labels.*.name, 'bean-review') &&
+      (contains(github.event.issue.labels.*.name, 'bean-review') ||
+       contains(github.event.issue.labels.*.name, 'tea-review')) &&
       !contains(github.event.issue.labels.*.name, 'published')
     runs-on: ubuntu-latest
     env:
@@ -29,6 +32,8 @@ jobs:
       REPO: ${{ github.repository }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:

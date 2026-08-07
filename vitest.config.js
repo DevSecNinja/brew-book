@@ -6,7 +6,7 @@ export default defineConfig({
     include: ['tests/**/*.test.js'],
     coverage: {
       provider: 'v8',
-      include: ['scripts/lib/**', 'src/**'],
+      include: ['scripts/lib/**', 'src/**', 'products/**'],
     },
   },
 });

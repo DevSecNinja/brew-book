@@ -1,0 +1,156 @@
+---
+name: Pages
+
+# Two static sites, two Cloudflare Pages projects, one shared core:
+#   dist/coffee -> bean-book  (coffee.ravensberg.org)
+#   dist/tea    -> leaf-book  (tea.ravensberg.org)
+#
+# Reviews are re-fetched from published GitHub Issues on every run, so
+# publishing, unpublishing or editing an issue is the whole state machine —
+# there is no "already processed" marker.
+#
+# The build happens here rather than inside the shared workflow, because it
+# needs a GITHUB_TOKEN to read those issues. Both sites are built and tested
+# once, uploaded as artifacts, and the reusable workflow only deploys them.
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+      - closed
+    paths-ignore:
+      - "**.md"
+  # Rebuild when reviews are published/unpublished or edited.
+  issues:
+    types: [closed, reopened, labeled, unlabeled, edited, deleted]
+  # Daily refresh so edits to already-published issues eventually show up.
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Test & build both sites
+    if: ${{ github.event_name != 'pull_request' || github.event.action != 'closed' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          # renovate: datasource=node-version depName=node
+          node-version: "24"
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm test
+
+      # Pull requests build without a token, from the committed sample
+      # fixtures, so preview deploys never run unreviewed code against the
+      # GitHub API. Only the production branch reads live published issues.
+      - name: Build both sites
+        env:
+          GITHUB_TOKEN: ${{ github.event_name != 'pull_request' && github.token || '' }}
+          APP_COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          BUILD_ID="${APP_COMMIT_SHA::12}-$(date -u +%Y%m%d%H%M%S)" \
+            npm run build
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: site-coffee
+          path: dist/coffee
+          retention-days: 1
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: site-tea
+          path: dist/tea
+          retention-days: 1
+
+  bean-book:
+    name: Bean Book (coffee)
+    needs: build
+    if: >-
+      ${{ !cancelled() &&
+      (needs.build.result == 'success' || needs.build.result == 'skipped') }}
+    uses: DevSecNinja/.github/.github/workflows/pages.yml@7d7ddabef968d8505aceb8a1f8965afd872f0a0c # v2.4.0
+    permissions:
+      contents: read
+      deployments: write
+      id-token: write
+      issues: write
+      pull-requests: write
+      # Unused — we deploy to Cloudflare, not GitHub Pages — but the reusable
+      # workflow's `deploy` job declares `pages: write`, and GitHub validates
+      # nested-job permissions when the run starts, before `github-pages: false`
+      # skips that job. Without it the whole workflow fails to start.
+      pages: write
+    with:
+      # renovate: datasource=npm depName=wrangler
+      wrangler-version: "4.116.0"
+      github-pages: false
+      # Nothing to install or build here: the site arrives prebuilt and the
+      # test suite already ran in the build job above. Left at its `npm ci`
+      # default, install-command would also force a node-version input.
+      install-command: ""
+      cloudflare-production: true
+      cloudflare-project-name: bean-book
+      artifact-name: site-coffee
+      artifact-path: dist/coffee
+    secrets:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+  leaf-book:
+    name: Leaf Book (tea)
+    needs: build
+    if: >-
+      ${{ !cancelled() &&
+      (needs.build.result == 'success' || needs.build.result == 'skipped') }}
+    uses: DevSecNinja/.github/.github/workflows/pages.yml@7d7ddabef968d8505aceb8a1f8965afd872f0a0c # v2.4.0
+    permissions:
+      contents: read
+      deployments: write
+      id-token: write
+      issues: write
+      pull-requests: write
+      # Unused — we deploy to Cloudflare, not GitHub Pages — but the reusable
+      # workflow's `deploy` job declares `pages: write`, and GitHub validates
+      # nested-job permissions when the run starts, before `github-pages: false`
+      # skips that job. Without it the whole workflow fails to start.
+      pages: write
+    with:
+      # renovate: datasource=npm depName=wrangler
+      wrangler-version: "4.116.0"
+      github-pages: false
+      # Nothing to install or build here: the site arrives prebuilt and the
+      # test suite already ran in the build job above. Left at its `npm ci`
+      # default, install-command would also force a node-version input.
+      install-command: ""
+      cloudflare-production: true
+      cloudflare-project-name: leaf-book
+      artifact-name: site-tea
+      artifact-path: dist/tea
+      preview-comment-marker: "<!-- cf-preview-comment-leaf-book -->"
+    secrets:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
