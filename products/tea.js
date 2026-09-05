@@ -10,7 +10,7 @@
  */
 
 const BRANDS = [
-  'Other (not listed)', 'Simon Lévelt', 'Or Tea?', 'Pickwick', 'Zenzo Tea',
+  'Other (not listed)', 'Simon Lévelt', 'Tea Bar', 'Or Tea?', 'Pickwick', 'Zenzo Tea',
   'Betjeman & Barton', 'Mariage Frères', 'Dammann Frères', 'Kusmi Tea',
   'Ronnefeldt', 'Teekanne', 'Whittard of Chelsea', 'Twinings', 'Fortnum & Mason',
   'Rare Tea Company', 'Postcard Teas', 'Yunomi', 'Ippodo Tea', 'Marukyu Koyamaen',
