@@ -2,7 +2,7 @@
 [tools]
 # renovate: datasource=node-version depName=node
 node = "24"
-dprint = "0.57.1"
+dprint = "0.57.2"
 yamlfmt = "0.21.0"
 actionlint = "1.7.12"
 gitleaks = "8.30.1"
