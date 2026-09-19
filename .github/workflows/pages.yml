@@ -108,7 +108,7 @@ jobs:
     if: >-
       ${{ !cancelled() && (needs.build.result == 'success' ||
       (github.event_name == 'pull_request' && github.event.action == 'closed')) }}
-    uses: DevSecNinja/.github/.github/workflows/pages.yml@0d0f448de257f354c89dc3a128871235d6ba8c11 # v2.5.0
+    uses: DevSecNinja/.github/.github/workflows/pages.yml@7a3e8e1475c658c60c23bedc7daf2e559bfe60b4 # v3.1.0
     permissions:
       contents: read
       deployments: write
@@ -142,7 +142,7 @@ jobs:
     if: >-
       ${{ !cancelled() && (needs.build.result == 'success' ||
       (github.event_name == 'pull_request' && github.event.action == 'closed')) }}
-    uses: DevSecNinja/.github/.github/workflows/pages.yml@0d0f448de257f354c89dc3a128871235d6ba8c11 # v2.5.0
+    uses: DevSecNinja/.github/.github/workflows/pages.yml@7a3e8e1475c658c60c23bedc7daf2e559bfe60b4 # v3.1.0
     permissions:
       contents: read
       deployments: write
