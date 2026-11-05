@@ -59,7 +59,7 @@ jobs:
       github.event.action == 'unlabeled' ||
       contains(github.event.issue.labels.*.name, 'bean-review') ||
       contains(github.event.issue.labels.*.name, 'tea-review')) }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     permissions:
       contents: read
