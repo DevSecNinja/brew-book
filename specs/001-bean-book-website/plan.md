@@ -37,7 +37,7 @@ treated as hostile; relative asset paths for GitHub Pages project hosting.
 
 ## Constitution Check
 
-*GATE: must pass before and after design.*
+_GATE: must pass before and after design._
 
 - **I. No Backend, Static-First** — PASS. Data is build-time JSON; hosting is Pages.
 - **II. Minimal, Trusted Dependencies** — PASS. Zero runtime deps; dev = vitest.

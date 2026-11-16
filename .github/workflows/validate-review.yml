@@ -7,7 +7,9 @@ name: Validate review
 # (add `published` + close). The product is resolved from the form label.
 on:
   issues:
-    types: [opened, edited]
+    types:
+      - opened
+      - edited
 
 permissions:
   contents: read
@@ -52,6 +54,6 @@ jobs:
           steps.validate.outputs.valid == 'true' &&
           github.event.issue.author_association == 'OWNER' &&
           github.event.issue.state == 'open'
-        run: |
+        run: |-
           gh issue edit "$NUMBER" --repo "$REPO" --add-label published
           gh issue close "$NUMBER" --repo "$REPO" --reason completed
