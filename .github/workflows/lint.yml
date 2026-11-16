@@ -29,7 +29,7 @@ concurrency:
 
 jobs:
   lint:
-    uses: DevSecNinja/.github/.github/workflows/lint.yml@5cee546e22e862a82f74e8dda800d439b9af537c # v4.1.0
+    uses: DevSecNinja/.github/.github/workflows/lint.yml@ee84519c9f7faa34b318991a124f0f2faea274f4 # v4.2.1
     permissions:
       contents: read
       security-events: write
@@ -41,3 +41,7 @@ jobs:
       # gitleaks, trivy, zizmor or checkov needs a repo-steward exception
       # (rule security/ci-scanners). See DevSecNinja/.github
       # workflow-templates/lint.yml for the other inputs.
+      # Spec Kit output (vendored scripts) is excluded, as the central dprint
+      # and yamlfmt configs exclude .specify/**.
+      lint-shellcheck-exclude: ".specify/*"
+      lint-shfmt-exclude: ".specify/*"
