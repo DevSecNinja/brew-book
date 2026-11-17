@@ -10,7 +10,7 @@
 showcases coffee bean reviews submitted as GitHub Issues. No backend, minimal
 dependencies, good looking, offline PWA, deployed to GitHub Pages by pipeline."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Browse reviewed beans (Priority: P1)
 
@@ -118,7 +118,7 @@ Confirm an unpublished issue does not appear in the built data.
 - No published reviews yet: the site shows a friendly empty state with a CTA.
 - A review omits all optional fields: the card still renders with required fields.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -176,7 +176,7 @@ Confirm an unpublished issue does not appear in the built data.
 - **Roaster**: The producer/brand; may come from the dropdown or the freeform
   "Other" field.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
