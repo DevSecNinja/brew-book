@@ -33,6 +33,27 @@ describe('cleanText', () => {
     expect(cleanText('a\u0000b')).toBe('ab');
   });
 
+  it('cannot be tricked into reassembling a tag', () => {
+    // Nested tags: a single pass would leave "<script>" behind.
+    expect(cleanText('<scr<script>ipt>alert(1)</scr</script>ipt>')).toBe('ipt>alert(1)ipt>');
+    expect(cleanText('<<script>script>alert(1)')).toBe('alert(1)');
+    // A control char splitting the tag name is removed before tags are stripped.
+    expect(cleanText('<\u0000script>alert(1)')).toBe('alert(1)');
+    // Encoded tags are decoded, then stripped like any other.
+    expect(cleanText('&lt;scr&lt;script&gt;ipt&gt;x')).toBe('ipt>x');
+    // Unclosed tag openers and comments are neutralised.
+    expect(cleanText('a <script')).toBe('a script');
+    expect(cleanText('<<a')).toBe('a');
+    expect(cleanText('x <!-- y')).toBe('x !-- y');
+    for (const input of ['<scr<script>ipt>', '<<script>script>', '<\u0000script>', 'a <script', '<</a']) {
+      expect(cleanText(input) ?? '').not.toMatch(/<[a-zA-Z/!?]/);
+    }
+  });
+
+  it('keeps a plain "<" that cannot open a tag', () => {
+    expect(cleanText('ratio < 1:15')).toBe('ratio < 1:15');
+  });
+
   it('collapses whitespace and caps the length', () => {
     expect(cleanText('a    b')).toBe('a b');
     expect(cleanText('x'.repeat(300)).length).toBe(200);

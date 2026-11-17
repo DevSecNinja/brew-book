@@ -40,10 +40,19 @@ function decodeEntities(str) {
 export function cleanText(value, max = MAX_SHORT) {
   if (typeof value !== 'string') return null;
   let s = decodeEntities(value);
-  // Remove HTML/XML tags outright (defence in depth beyond textContent).
-  s = s.replace(/<\/?[a-zA-Z][^>]*>/g, '');
-  // Strip ASCII control chars except tab/newline.
+  // Strip ASCII control chars except tab/newline first, so they can't split a
+  // tag past the tag stripper (e.g. "<\u0000script>").
   s = s.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '');
+  // Remove HTML/XML tags outright (defence in depth beyond textContent).
+  // Repeat until stable: one pass would turn "<scr<script>ipt>" into "<script>".
+  let previous;
+  do {
+    previous = s;
+    s = s.replace(/<\/?[a-zA-Z][^>]*>/g, '');
+  } while (s !== previous);
+  // Drop any "<" left that could still open a tag or comment (an unclosed
+  // "<script", "<!--", "</"). "<" before "<" goes too, so "<<a" can't become "<a".
+  s = s.replace(/<(?=[a-zA-Z/!?<])/g, '');
   // Collapse runs of spaces/tabs; trim each line; cap blank lines.
   s = s.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
   if (s.length === 0) return null;
