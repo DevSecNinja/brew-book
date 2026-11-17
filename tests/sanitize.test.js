@@ -36,7 +36,7 @@ describe('cleanText', () => {
   it('cannot be tricked into reassembling a tag', () => {
     // Nested tags: a single pass would leave "<script>" behind.
     expect(cleanText('<scr<script>ipt>alert(1)</scr</script>ipt>')).toBe('ipt>alert(1)ipt>');
-    expect(cleanText('<<script>script>alert(1)')).toBe('alert(1)');
+    expect(cleanText('<<script>script>alert(1)')).toBe('script>alert(1)');
     // A control char splitting the tag name is removed before tags are stripped.
     expect(cleanText('<\u0000script>alert(1)')).toBe('alert(1)');
     // Encoded tags are decoded, then stripped like any other.
@@ -52,6 +52,15 @@ describe('cleanText', () => {
 
   it('keeps a plain "<" that cannot open a tag', () => {
     expect(cleanText('ratio < 1:15')).toBe('ratio < 1:15');
+  });
+
+  it('strips hostile input in linear time', () => {
+    // Quadratic for a strip-until-stable loop or a backtracking tag regex.
+    const n = 100_000;
+    const started = Date.now();
+    expect(cleanText(`${'<'.repeat(n)}a${'>a'.repeat(n)}`, 10)).toBe('a>a>a>a>a>');
+    expect(cleanText('<a'.repeat(n), 10)).toBe('a'.repeat(10));
+    expect(Date.now() - started).toBeLessThan(1000);
   });
 
   it('collapses whitespace and caps the length', () => {

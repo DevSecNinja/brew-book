@@ -33,6 +33,45 @@ function decodeEntities(str) {
   return str.replace(/&(amp|lt|gt|quot|apos|#39|#x27|nbsp);/g, (m) => ENTITIES[m] ?? m);
 }
 
+const isLetter = (ch) => ch !== undefined && /^[a-zA-Z]$/.test(ch);
+
+/**
+ * Remove HTML/XML tags in one linear pass and drop any "<" left that could
+ * still open markup. A regex replace can reassemble a tag from nested input
+ * ("<scr<script>ipt>" -> "<script>"), and repeating it until stable is
+ * quadratic on hostile input, so this scans once instead.
+ *
+ * A tag is "<" or "</" plus a letter, up to the next ">"; it is removed. Any
+ * other "<" that could open markup ("<!", "<?", "</", "<<", or a tag with no
+ * closing ">") is dropped. A "<" that is kept is always followed by a
+ * character that can't start a tag, so the output never contains one.
+ */
+function stripTags(s) {
+  let out = '';
+  // Once no ">" is left, no later "<" can close a tag: stop searching.
+  let closerLeft = true;
+  for (let i = 0; i < s.length; i += 1) {
+    const ch = s[i];
+    if (ch !== '<') {
+      out += ch;
+      continue;
+    }
+    const next = s[i + 1];
+    const nameAt = next === '/' ? i + 2 : i + 1;
+    if (closerLeft && isLetter(s[nameAt])) {
+      const end = s.indexOf('>', nameAt);
+      if (end !== -1) {
+        i = end;
+        continue;
+      }
+      closerLeft = false;
+    }
+    if (isLetter(next) || next === '/' || next === '!' || next === '?' || next === '<') continue;
+    out += ch;
+  }
+  return out;
+}
+
 /**
  * Clean an arbitrary untrusted string: decode entities, drop control chars,
  * strip HTML tags, collapse whitespace, cap length. Returns null when empty.
@@ -44,15 +83,7 @@ export function cleanText(value, max = MAX_SHORT) {
   // tag past the tag stripper (e.g. "<\u0000script>").
   s = s.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '');
   // Remove HTML/XML tags outright (defence in depth beyond textContent).
-  // Repeat until stable: one pass would turn "<scr<script>ipt>" into "<script>".
-  let previous;
-  do {
-    previous = s;
-    s = s.replace(/<\/?[a-zA-Z][^>]*>/g, '');
-  } while (s !== previous);
-  // Drop any "<" left that could still open a tag or comment (an unclosed
-  // "<script", "<!--", "</"). "<" before "<" goes too, so "<<a" can't become "<a".
-  s = s.replace(/<(?=[a-zA-Z/!?<])/g, '');
+  s = stripTags(s);
   // Collapse runs of spaces/tabs; trim each line; cap blank lines.
   s = s.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
   if (s.length === 0) return null;
