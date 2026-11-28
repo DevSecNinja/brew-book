@@ -12,4 +12,4 @@ shfmt = "3.14.1"
 # Security scanners run by the lint workflow (.github/workflows/lint.yml).
 trivy = "0.76.2"
 zizmor = "1.32.0"
-"pipx:checkov" = "3.4.3"
+"pipx:checkov" = "3.4.5"
